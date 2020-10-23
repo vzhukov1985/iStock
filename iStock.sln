@@ -1,0 +1,29 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MainApp", "MainApp\MainApp.csproj", "{984CAA57-DAC4-4076-81E9-D6E3FC07DED0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tst", "Tst\Tst.csproj", "{A2E0977F-E082-4A7D-BBAB-456BEB1F2FCD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{984CAA57-DAC4-4076-81E9-D6E3FC07DED0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{984CAA57-DAC4-4076-81E9-D6E3FC07DED0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{984CAA57-DAC4-4076-81E9-D6E3FC07DED0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{984CAA57-DAC4-4076-81E9-D6E3FC07DED0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2E0977F-E082-4A7D-BBAB-456BEB1F2FCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2E0977F-E082-4A7D-BBAB-456BEB1F2FCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2E0977F-E082-4A7D-BBAB-456BEB1F2FCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2E0977F-E082-4A7D-BBAB-456BEB1F2FCD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.DotNetNamingPolicy = $1
+		$1.DirectoryNamespaceAssociation = PrefixedHierarchical
+		$0.StandardHeader = $2
+	EndGlobalSection
+EndGlobal
