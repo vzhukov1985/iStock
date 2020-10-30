@@ -1,13 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using DbCore;
+using DbCore.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Westwind.AspNetCore.LiveReload;
 
 namespace MainApp
 {
@@ -24,6 +29,14 @@ namespace MainApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+
+            services.AddDbContext<MainDbContext>();
+
+            //TODO: Delete after deployment
+            services.AddLiveReload();
+            services.AddRazorPages().AddRazorRuntimeCompilation();
+            services.AddMvc().AddRazorRuntimeCompilation();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -41,6 +54,14 @@ namespace MainApp
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            
+            //TODO: Delete after deployment and change in _Layout.html all script links to other servers
+            app.UseFileServer(new FileServerOptions()
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "node_modules")),
+                RequestPath = "/node_modules",
+                EnableDirectoryBrowsing = false
+            });
 
             app.UseRouting();
 
@@ -50,7 +71,7 @@ namespace MainApp
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Suppliers}/{action=Index}");
+                    pattern: "{controller=Home}/{action=Index}");
             });
         }
     }

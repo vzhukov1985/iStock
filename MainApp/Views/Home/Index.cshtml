@@ -1,0 +1,140 @@
+﻿@model HomeVM
+@{
+    ViewData["Title"] = "Список поставщиков";
+}
+<div class="container-fluid d-flex flex-column px-5" style="height:100vh;">
+    <div class="row text-left ml-5 align-content-end" style="height: 20%;">
+        <div class="row">
+            <div>
+                <h1 class="display-3 mb-0" style="line-height: 90%;">iStock</h1>
+                <p style="font-size:small; line-height: 100%; margin-top: 0px;">Система парсинга прайс-листов</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="max-height:60%">
+        <div class="col">
+            <table id="pltable" class="table table-sm table-bordered mb-0 table-hover"
+                   data-toggle="table"
+                   data-search="true">
+                <thead>
+                    <tr style="background: #1b6ec2; color: white;">
+                        <th data-field="id" data-visible="false">Id</th>
+                        <th data-field="supplierName" data-sortable="true">Поставщик</th>
+                        <th data-field="name" data-sortable="true">Название</th>
+                        <th data-field="lastUpdate" data-sortable="true">Последняя загрузка</th>
+                        <th data-field="uncheckedCount" data-sortable="true">Непроверенных позиций</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+
+    <div class="row mt-3 px-2">
+        <div class="col">
+            <button type="button" id="btnView" class="btn btn-primary mr-3 btn-home" disabled>Просмотреть</button>
+            <button type="button" id="btnSettings" class="btn btn-success mr-3 btn-home" disabled data-toggle="modal" data-target="#settingsModal">Настройки</button>
+            <button type="button" id="btnPull" class="btn btn-info mr-3 btn-home" disabled>Загрузить</button>
+        </div>
+        <div class="col-2">
+            <button type="button" class="btn btn-warning float-right btn-home">Выйти</button>
+        </div>
+    </div>
+
+    <!-- Modal dialogs-->
+    <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalTitle">Настройки прайс-листа</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-6">
+                                <label for="inpSupplierName">Поставщик</label>
+                                <input type="text" class="form-control" id="inpSupplierName" required>
+                            </div>
+                            <div class="col-6">
+                                <label for="inpPricelistName">Название</label>
+                                <input type="text" class="form-control" id="inpPricelistName" required>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-6 d-inline-flex">
+                                <label for="inpPreorderInDays" class="text-nowrap mr-2" style="margin-top:2px;">Предзаказ в днях:</label>
+                                <input type="number" class="form-control form-control-sm" id="inpPreorderInDays" required>
+                            </div>
+
+                            <div class="col-6 d-inline-flex">
+                                <label for="inpMinStockAvail" class="text-nowrap mr-2" style="margin-top:2px;">Мин. кол-во:</label>
+                                <input type="number" class="form-control form-control-sm" id="inpMinStockAvail" required>
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col">
+                                <input type="checkbox" class="custom-checkbox mr-2" id="chkIsFavorite" required>
+                                <label for="chkIsFavorite">Парсить цены по товарам</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+@section Scripts
+{
+    <script>
+        $(document).ready(loadPricelistsBriefData());
+
+        //Selection/deselection of pricelist
+        $('#pltable').bootstrapTable({
+            onClickRow: function (row, $element, field) {
+                $element.addClass('table-active').siblings().removeClass('table-active');
+                $('#btnView').removeAttr('disabled');
+                $('#btnSettings').removeAttr('disabled');
+                $('#btnPull').removeAttr('disabled');
+            },
+            onSort: function (name, order) { disableButtons(); },
+            onSearch: function (text) { disableButtons(); }
+        });
+
+        $('#btnSettings').bind('click', function () {
+            alert($('.table-active').first().children('td').first().html());
+        });
+
+        function loadPricelistsBriefData() {
+            $.ajax({
+                type: 'GET',
+                url: '/pricelists/getallbrief',
+                datatype: "json",
+                success: function (data) {
+                    $('#pltable').bootstrapTable('load', data);
+                }
+            })
+        };
+
+        function disableButtons() {
+            $('#btnView').prop('disabled',true);
+            $('#btnSettings').prop('disabled', true);
+            $('#btnPull').prop('disabled', true);
+
+        }
+
+
+    </script>
+}
