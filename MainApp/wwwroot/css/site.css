@@ -71,17 +71,8 @@ body {
 }
 
 
-.table-hover tbody tr:hover td {
-    background: #ecf8ff;
-}
-
-.table > tbody > tr.table-active > td {
-    background: #c4e8ff;
-    color: black;
-}
-.table > tbody > tr.table-active:hover > td {
-    background: #b2e1ff;
-    color: black;
+#pricelists-lable .tabulator-header {
+    background-color: #ffffff;
 }
 
 

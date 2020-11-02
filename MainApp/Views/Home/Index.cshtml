@@ -14,19 +14,23 @@
 
     <div class="row" style="max-height:60%">
         <div class="col">
-            <table id="pltable" class="table table-sm table-bordered mb-0 table-hover"
-                   data-toggle="table"
-                   data-search="true">
-                <thead>
-                    <tr style="background: #1b6ec2; color: white;">
-                        <th data-field="id" data-visible="false">Id</th>
-                        <th data-field="supplierName" data-sortable="true">Поставщик</th>
-                        <th data-field="name" data-sortable="true">Название</th>
-                        <th data-field="lastUpdate" data-sortable="true">Последняя загрузка</th>
-                        <th data-field="uncheckedCount" data-sortable="true">Непроверенных позиций</th>
-                    </tr>
-                </thead>
-            </table>
+            <div id="pricelists-table"></div>
+
+            <!--
+    <table id="pltable" class="table table-sm table-bordered mb-0 table-hover"
+           data-toggle="table"
+           data-search="true">
+        <thead>
+            <tr style="background: #1b6ec2; color: white;">
+                <th data-field="id" data-visible="true" data-selector="">Id</th>
+                <th data-field="supplierName" data-sortable="true">Поставщик</th>
+                <th data-field="name" data-sortable="true">Название</th>
+                <th data-field="lastUpdate" data-sortable="true">Последняя загрузка</th>
+                <th data-field="uncheckedCount" data-sortable="true">Непроверенных позиций</th>
+            </tr>
+        </thead>
+    </table>
+        -->
         </div>
     </div>
 
@@ -99,7 +103,22 @@
 @section Scripts
 {
     <script>
-        $(document).ready(loadPricelistsBriefData());
+        var table = new Tabulator("#pricelists-table", {
+            height: 205,
+            ajaxURL: "/pricelists/getallbrief",
+            layout: "fitColumns", 
+            columns: [ 
+                { title: "Поставщик", field:"supplierName"},
+                { title: "Название", field: "name" },
+                { title: "Последняя загрузка", field: "lastUpdate" },
+                { title: "Непроверенных наименований", field: "uncheckedCount" }
+            ],
+            rowClick: function (e, row) {
+                alert("Row " + row.getData().id + " Clicked!!!!");
+            },
+        });
+
+        @*$(document).ready(loadPricelistsBriefData());
 
         //Selection/deselection of pricelist
         $('#pltable').bootstrapTable({
@@ -133,7 +152,7 @@
             $('#btnSettings').prop('disabled', true);
             $('#btnPull').prop('disabled', true);
 
-        }
+        }*@
 
 
     </script>

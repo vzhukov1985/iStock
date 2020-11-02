@@ -27,10 +27,10 @@ namespace Dynatone
             services.AddControllersWithViews();
 
             //TODO: Delete after deployment
-/*                services.AddLiveReload();
+                services.AddLiveReload();
                 services.AddRazorPages().AddRazorRuntimeCompilation();
                 services.AddMvc().AddRazorRuntimeCompilation();
-*/        }
+        }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
     <title>@ViewData["Title"] - iStock</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="/node_modules/bootstrap-table/dist/bootstrap-table.min.css"/>
+    <link rel="stylesheet" href="~/lib/tabulator/dist/css/tabulator.min.css">
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
@@ -25,10 +25,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script src="/node_modules/bootstrap-table/dist/bootstrap-table.min.js"></script>
-    <script src="/node_modules/bootstrap-table/dist/locale/bootstrap-table-ru-RU.js"></script>
-    <script>$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['ru-RU'])</script>
-    
+    <script type="text/javascript" src="~/lib/tabulator/dist/js/tabulator.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)
 </body>
