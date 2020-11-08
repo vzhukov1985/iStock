@@ -11,14 +11,16 @@
 <body>
     <header>
     </header>
-    <main role="main" class="pb-3">
-        @RenderBody()
+    <main role="main" style="height:100%;">
+        <div class="container-fluid px-5" style="height:100%">
+            @RenderBody()
+        </div>
     </main>
 
 
 
     <footer class="border-top footer text-muted">
-        <div class="container">
+        <div class="container-fluid px-5" style="font-size:small">
             &copy; 2020 - Zhukov Technologies
         </div>
     </footer>

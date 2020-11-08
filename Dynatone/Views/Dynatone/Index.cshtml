@@ -233,7 +233,7 @@
                         $("#chkExcludeNotInStock").prop('checked', response.excludeNotInStock);
                         $("#chkExcludeExcludedItems").prop('checked', response.excludeExcludedItems);
                         $("#chkExcludeExcludedGroups").prop('checked', response.excludeExcludedGroups);
-                        $('#inpExRate').val(responser.exchangeRate);
+                        $('#inpExRate').val(response.exchangeRate);
                     },
                     error: function (errormessage) {
                         alert("Неизвестная ошибка " + errormessage);

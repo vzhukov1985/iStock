@@ -15,7 +15,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "! - Info", "! - Info", "{F4
 		Database.txt = Database.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dynatone", "Dynatone\Dynatone.csproj", "{3B056BCA-7D0F-4F1F-9063-FC9E27835EA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dynatone", "Dynatone\Dynatone.csproj", "{3B056BCA-7D0F-4F1F-9063-FC9E27835EA3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MainAppTests", "MainAppTests\MainAppTests.csproj", "{E6F98437-5472-4526-B1FC-291BA76A4173}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,6 +45,10 @@ Global
 		{3B056BCA-7D0F-4F1F-9063-FC9E27835EA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B056BCA-7D0F-4F1F-9063-FC9E27835EA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B056BCA-7D0F-4F1F-9063-FC9E27835EA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6F98437-5472-4526-B1FC-291BA76A4173}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6F98437-5472-4526-B1FC-291BA76A4173}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6F98437-5472-4526-B1FC-291BA76A4173}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6F98437-5472-4526-B1FC-291BA76A4173}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

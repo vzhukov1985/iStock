@@ -1,0 +1,711 @@
+﻿@{
+    Layout = "_PricelistMainLayout";
+    ViewData["Title"] = "Dynatone";
+}
+
+<div class="row mt-2 justify-content-between" style="height:9.7%">
+    <div class="col-auto">
+        <h3 class=" mb-0" style="color:#1b6ec2; line-height:150%"><span id="supplierName"></span>&#160
+        <span class="h6 mt-0" style="color:#91C3F5" id="plName">Общий</span></h3>
+        <p style="font-size:x-small; line-height: 110%;">Последняя загрузка: <span id="lastUpdate">Нет</span><br />
+        Непросмотренных позиций: <span id="itemsToVerify">0</span></p>
+    </div>
+    <div class="col-auto">
+        <h1 class="display-4 mb-0" style="line-height: 90%;">iStock</h1>
+        <p style="font-size:x-small; line-height: 100%; margin-top: 0px;">Система парсинга прайс-листов</p>
+    </div>
+</div>
+
+<div class="row mt-1">
+    <div class="col-12">
+        <button type="button" id="btnPull" class="btn btn-success mr-1 btn-sm">Загрузить</button>
+        <button type="button" id="btnPush" class="btn btn-success mr-1 btn-sm" disabled>Выгрузить</button>
+        <button type="button" id="btnDownload" class="btn btn-success mr-1 btn-sm">Скачать XLS</button>
+        <button type="button" id="btnSettings" class="btn btn-warning mr-1 btn-sm">Настройки</button>
+    </div>
+</div>
+
+<div class="row mt-1" style="max-height:80%">
+    <div class="col-10">
+        <div id="table" style="width:78vw"></div>
+    </div>
+    <div class="col-2">
+        <p>asd</p>
+    </div>
+</div>
+
+<!--Modal Dialogs-->
+<div class="modal fade" id="pullModal" tabindex="-1" role="dialog" aria-labelledby="pullModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pullModalTitle">Загрузка прайс-листа поставщика</h5>
+                <button id="btnPullCloseHeader" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <p id="pullStatus">Соединение...</p>
+            </div>
+
+            <div class="modal-footer">
+                <button id="btnPullClose" type="button" class="btn btn-primary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="settingsModalTitle">Настройки прайс-листа</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form>
+                    <div class="form-row form-group">
+                        <div class="col-6">
+                            <label for="inpSupplierName">Поставщик</label>
+                            <input type="text" class="form-control" id="inpSupplierName" required>
+                        </div>
+                        <div class="col-6">
+                            <label for="inpPricelistName">Название</label>
+                            <input type="text" class="form-control" id="inpPricelistName" required>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-6 d-inline-flex">
+                            <label for="inpPreorderInDays" class="text-nowrap mr-2" style="margin-top:2px;">Предзаказ в днях:</label>
+                            <input type="number" class="form-control form-control-sm" id="inpPreorderInDays" required>
+                        </div>
+
+                        <div class="col-6 d-inline-flex">
+                            <label for="inpMinStockAvail" class="text-nowrap mr-2" style="margin-top:2px;">Мин. кол-во:</label>
+                            <input type="number" class="form-control form-control-sm" id="inpMinStockAvail" required>
+                        </div>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col">
+                            <input type="checkbox" class="custom-checkbox mr-2" id="chkIsFavorite" required>
+                            <label for="chkIsFavorite">Парсить цены по товарам</label>
+                        </div>
+                    </div>
+
+                    <div class="row mt-1">
+                        <div class="col">
+                            <label class="text-nowrap">Курс валюты (KZT/<span id="currency"></span>):</label>
+                        </div>
+                    </div>
+                    <div class="row mt-0">
+                        <div class="col">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="exchangeRateType" id="exchangeRateAuto" value="exchangeRateAuto">
+                                <label class="form-check-label" for="exchangeRateAuto">Курс НацБанка</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="exchangeRateType" id="exchangeRateCustom" value="exchangeRateCustom">
+                                <input type="number" class="form-control form-control-sm w-50" id="exchangeRateVal" required>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button id="btnSaveSettings" type="button" class="btn btn-primary">Сохранить</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        var currentURL = window.location.pathname;
+        var updatePullStatusTimer;
+        var cellCustomColor = "#EAF746";
+
+        function updatePricelistHeader() {
+            $.ajax({
+                type: 'GET',
+                url: currentURL + "/getPricelistHeader",
+                success: function (response) {
+                    $('#supplierName').html(response.supplierName);
+                    $('#plName').html(response.name);
+                }
+            })
+        }
+
+        var cmIsVerifiedHeader = [
+            {
+                label: "Пометить все как просмотренные",
+                action: function (e, column) {
+                    setAllIsVerified(true);
+                }
+            },
+            {
+                label: "Пометить все как непросмотренные",
+                action: function (e, column) {
+                    setAllIsVerified(false);
+                }
+            }
+        ];
+
+        var cmStatusHeader = [
+            {
+                label: "Включить все",
+                action: function (e, column) {
+                    setAllStatus(1);
+                }
+            },
+            {
+                label: "Исключить все",
+                action: function (e, column) {
+                    setAllStatus(0);
+                }
+            }
+        ];
+
+        var cmCodeGroupCell = [
+            {
+                label: "Включить товары группы",
+                action: function (e, cell) {
+                    setGroupStatus(cell.getData().groupCode, 1);
+                }
+            },
+            {
+                label: "Исключить товары группы",
+                action: function (e, cell) {
+                    setGroupStatus(cell.getData().groupCode, 0);
+                }
+            }
+        ];
+
+        var cmDataCell = [
+            {
+                label: "Значение от поставщика",
+                action: function (e, cell) {
+                    setCellDefaultValue(cell);
+                }
+            },
+            {
+                label: "Зафиксировать значение",
+                action: function (e, cell) {
+                    cellEdited(cell);
+                }
+            }
+        ];
+
+        var cmGeneral = [
+            {
+                separator: true
+            },
+            {
+                label: "Отметить выделенные как просмотренные",
+                action: function (e, cell) {
+                    var data = table.getSelectedData();
+                    data.forEach(function (value, index, array) {
+                        setIsVerifiedById(value.id, true);
+                    })
+                },
+                disabled: function () {
+                    return table.getSelectedRows().length == 0;
+                }
+            },
+            {
+                label: "Отметить выделенные как непросмотренные",
+                action: function (e, cell) {
+                    var data = table.getSelectedData();
+                    data.forEach(function (value, index, array) {
+                        setIsVerifiedById(value.id, false);
+                    })
+                },
+                disabled: function () {
+                    return table.getSelectedRows().length == 0;
+                }
+            },
+            {
+                label: "Включить выделенные товары",
+                action: function (e, cell) {
+                    var data = table.getSelectedData();
+                    data.forEach(function (value, index, array) {
+                        setStatusById(value.id, 1);
+                    })
+                },
+                disabled: function () {
+                    return table.getSelectedRows().length == 0;
+                }
+            },
+            {
+                label: "Исключить выделенные товары",
+                action: function (e, cell) {
+                    var data = table.getSelectedData();
+                    data.forEach(function (value, index, array) {
+                        setStatusById(value.id, 0);
+                    })
+                },
+                disabled: function () {
+                    return table.getSelectedRows().length == 0;
+                }
+            }
+
+        ];
+
+        var table = new Tabulator("#table", {
+            height: "80vh",
+            ajaxURL: currentURL + "/getbriefdata",
+            headerSortElement: "&#9650;",
+            selectable: true,
+            selectableRangeMode: "click",
+            resizableColumns: "header",
+            layout: "fitColumns",
+            tooltips: cellToolTip,
+            cellEdited: cellEdited,
+            cellEditCancelled: cellEditCancelled,
+            columns: [
+                {
+                    title: "",
+                    field: "isVerified",
+                    width: 60,
+                    hozAlign: "center",
+                    resizable: false,
+                    formatter: isVerifiedFormatter,
+                    cellClick: isVerifiedCellClick,
+                    headerMenu: cmIsVerifiedHeader,
+                    contextMenu: cmGeneral
+                },
+                {
+                    title: "",
+                    field: "status",
+                    width: 60,
+                    hozAlign: "center",
+                    resizable: false,
+                    formatter: statusFormatter,
+                    cellClick: statusCellClick,
+                    headerMenu: cmStatusHeader,
+                    contextMenu: cmGeneral
+                },
+                {
+                    title: "Код группы",
+                    field: "groupCode",
+                    width: 120,
+                    contextMenu: cmCodeGroupCell.concat(cmGeneral)
+                },
+                {
+                    title: "SKU",
+                    field: "sku",
+                    width: 100,
+                    editor: "input",
+                    editable: false,
+                    formatter: dataFormatter,
+                    cellDblClick: editableCellDblClick,
+                    contextMenu: cmDataCell.concat(cmGeneral)
+                },
+                {
+                    title: "Бренд",
+                    field: "brand",
+                    width: 100,
+                    editor: "input",
+                    editable: false,
+                    formatter: dataFormatter,
+                    cellDblClick: editableCellDblClick,
+                    contextMenu: cmDataCell.concat(cmGeneral)
+                },
+                {
+                    title: "Наименование",
+                    field: "name",
+                    editor: "input",
+                    editable: false,
+                    formatter: dataFormatter,
+                    cellDblClick: editableCellDblClick,
+                    contextMenu: cmDataCell.concat(cmGeneral)
+                },
+                {
+                    title: "Цена (тг)",
+                    field: "price",
+                    widthGrow: 0.24,
+                    editor: "number",
+                    editable: false,
+                    formatter: dataFormatter,
+                    cellDblClick: editableCellDblClick,
+                    contextMenu: cmDataCell.concat(cmGeneral)
+                },
+                {
+                    title: "Лимит цены (тг)",
+                    field: "priceLimit",
+                    widthGrow: 0.37,
+                    editor: "number",
+                    editable: false,
+                    formatter: dataFormatter,
+                    cellDblClick: editableCellDblClick,
+                    contextMenu: cmDataCell.concat(cmGeneral)
+                }
+            ]
+        });
+
+        //*** OnLoadCode
+
+        table.setSort([{ column: "groupCode", dir: "asc" }]);
+        updatePricelistHeader();
+        updateLastPull();
+        updateItemsToVerify();
+
+        //***
+
+        function isVerifiedFormatter(cell, formatterParams, onRendered) {
+            if (cell.getValue() == 0) {
+                cell.getElement().style.color = "red";
+                cell.getElement().style.backgroundColor = "#FFB6C1";
+                return "&#9888;";
+            }
+            else {
+                cell.getElement().style.color = "green";
+                cell.getElement().style.backgroundColor = "transparent";
+                return "&#10004;";
+            }
+        }
+
+        function statusFormatter(cell, formatterParams, onRendered) {
+            switch (cell.getValue()) {
+                case 0:
+                    cell.getElement().style.color = "red";
+                    return "&#10060;";
+                    break;
+                case 1:
+                    cell.getElement().style.color = "green";
+                    return "&#10004;";
+                    break;
+                case 2:
+                    cell.getElement().style.color = "#A8B415";
+                    return "&#9888;";
+                    break;
+                case 3:
+                    cell.getElement().style.color = "red";
+                    return "&#128276;";
+                    break;
+                case 4:
+                    cell.getElement().style.color = "red";
+                    return "&#128293;";
+                    break;
+            }
+        }
+
+        function dataFormatter(cell, formatterParams, onRendered) {
+            var field = cell.getField();
+            var value = cell.getValue();
+            var capitalizedField = field.charAt(0).toUpperCase() + field.substring(1);
+            if (cell.getData()['is' + capitalizedField + 'Custom'] == true) {
+                cell.getElement().style.backgroundColor = cellCustomColor;
+            }
+            else {
+                cell.getElement().style.backgroundColor = "transparent";
+
+            }
+            if ((capitalizedField == "Price" || capitalizedField == "PriceLimit") && (value != null)) {
+                var strVal = String(value.toFixed(2));
+                if (strVal.substr(strVal.length - 3) == ".00") {
+                    return Number(value).toLocaleString();
+                }
+                else {
+                    return Number(value).toFixed(2).toLocaleString();
+                }
+
+            }
+            else {
+                return value;
+            }
+        }
+
+        function cellToolTip(cell) {
+            if (cell.getField() == 'status') {
+                switch (cell.getData().status) {
+                    case 0:
+                        return "Товар НЕ включен в базу";
+                    case 1:
+                        return "Товар включен в базу";
+                    case 2:
+                        return "Изменилось описание товара у поставщика";
+                    case 3:
+                        return "Изменилась цена у поставщика";
+                    case 4:
+                        return "Изменились и цена, и описание у поставщика";
+                }
+            }
+            return false;
+        }
+
+        function isVerifiedCellClick(e, cell) {
+            var rowData = cell.getData();
+            setIsVerifiedById(rowData.id, !rowData.isVerified);
+        }
+
+        function statusCellClick(e, cell) {
+            var rowData = cell.getData();
+            if (rowData.status == 1) {
+                setStatusById(rowData.id, 0)
+            }
+            else {
+                setStatusById(rowData.id, 1)
+            }
+        }
+
+        function editableCellDblClick(e, cell) {
+            cell.edit(true);
+        }
+
+        function cellEditCancelled(cell) {
+            isCellEditCancelled = true;
+        }
+
+        function cellEdited(cell) {
+            var rowData = cell.getData();
+            $.ajax({
+                type: 'POST',
+                url: currentURL + "/setCustomValue/" + rowData.id,
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify({ field: cell.getField(), value: cell.getValue() }),
+                success: function () {
+                    var field = cell.getField();
+                    var capField = field.charAt(0).toUpperCase() + field.substring(1);
+                    var data = [{
+                        'id': cell.getData().id,
+                    }]
+                    data[0]['is' + capField + 'Custom'] = true;
+                    table.updateData(data);
+                    cell.getElement().style.backgroundColor = cellCustomColor;
+                }
+            });
+        }
+
+        function setIsVerifiedById(id, value) {
+            $.ajax({
+                type: 'POST',
+                url: currentURL + "/setIsVerified/" + id,
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify(value),
+                success: function () {
+                    table.updateData([{ id: id, isVerified: value }]);
+                    updateItemsToVerify();
+                }
+            })
+            
+        }
+
+        function setStatusById(id, value) {
+            $.ajax({
+                type: 'POST',
+                url: currentURL + "/setStatus/" + id,
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify(value),
+                success: function () { table.updateData([{ id: id, status: value }]); }
+            })
+
+        }
+
+        function setAllIsVerified(vvalue) {
+            if (confirm('ВНИМАНИЕ!!! Изменение коснется всех записей таблицы. Вы уверены, что хотите продолжить?')) {
+                $.ajax({
+                    type: 'POST',
+                    url: currentURL + "/setAllIsVerified",
+                    contentType: "application/json;charset=utf-8",
+                    data: JSON.stringify(vvalue),
+                    success: function () {
+                        table.getData().forEach(function (value, index, array) {
+                            table.updateData([{ id: value.id, isVerified: vvalue }]);
+                        })
+                        updateItemsToVerify();
+                    }
+                });
+            }
+        }
+
+        function setAllStatus(svalue) {
+            if (confirm('ВНИМАНИЕ!!! Изменение коснется всех записей таблицы. Вы уверены, что хотите продолжить?')) {
+                $.ajax({
+                    type: 'POST',
+                    url: currentURL + "/setAllStatus",
+                    contentType: "application/json;charset=utf-8",
+                    data: JSON.stringify(svalue),
+                    success: function () {
+                        table.getData().forEach(function (value, index, array) {
+                            table.updateData([{ id: value.id, status: svalue }]);
+                        })
+                    }
+                });
+            }
+        }
+
+        function setGroupStatus(groupCode, svalue) {
+            $.ajax({
+                type: 'POST',
+                url: currentURL + "/setGroupStatus",
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify({ groupCode: groupCode, value: svalue }),
+                success: function () {
+                    table.getData().forEach(function (value, index, array) {
+                        if (value.groupCode == groupCode) {
+                            table.updateData([{ id: value.id, status: svalue }]);
+                        }
+                    })
+                }
+            });
+        }
+
+        function setCellDefaultValue(cell) {
+            $.ajax({
+                type: 'POST',
+                url: currentURL + "/setDefaultValue/" + cell.getData().id,
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify(cell.getField()),
+                success: function (response) {
+                    var field = cell.getField();
+                    var capField = field.charAt(0).toUpperCase() + field.substring(1);
+                    var data = [{
+                        'id': cell.getData().id,
+                    }]
+                    data[0]['is' + capField + 'Custom'] = false;
+                    data[0][field] = response;
+                    table.updateData(data);
+                    cell.getElement().style.backgroundColor = "transparent";
+                }
+            });
+        }
+
+
+        $('#btnPull').on('click', function () {
+            $('#btnPullClose').prop('disabled', true);
+            $('#btnPullCloseHeader').prop('disabled', true);
+            $('#pullStatus').html('Соединение...');
+            $('#pullModal').modal('show');
+            $.ajax({
+                type: 'GET',
+                url: currentURL + "/pull/ispulling",
+                success: function (response) {
+                    if (response == false) {
+                        $('#pullStatus').html('Загрузка...');
+                        startPull();
+                    }
+                    updatePullStatusTimer = setInterval(updatePullStatus, 200);
+                },
+                error: function () {
+                    $('#pullStatus').html('Невозможно с соединиться с сервером поставщика');
+                    $('#btnPullClose').removeAttr('disabled');
+                    $('#btnPullCloseHeader').removeAttr('disabled');
+                }
+            })
+        })
+
+        $('#btnSettings').on('click', function () {
+            $.ajax({
+                type: 'GET',
+                url: currentURL + "/settings",
+                datatype: "json",
+                success: function (response) {
+                    $('#inpSupplierName').val(response.supplierName);
+                    $('#inpPricelistName').val(response.name);
+                    $('#inpPreorderInDays').val(response.preorderInDays);
+                    $('#inpMinStockAvail').val(response.minStockAvail);
+                    $('#chkIsFavorite').prop('checked', response.isFavorite);
+                    $('#currency').html(response.exchangeRateCurrency);
+                    if (response.isAutoExchangeRate) {
+                        $('#exchangeRateAuto').prop('checked', true);
+                    }
+                    else {
+                        $('#exchangeRateCustom').prop('checked', true);
+                    }
+                    $('#exchangeRateVal').val(response.exchangeRate);
+                    $('#settingsModal').modal('show');
+                }
+            });
+        })
+
+        $('#btnSaveSettings').on('click', function () {
+            $.ajax({
+                type: 'POST',
+                url: currentURL + "/settings",
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify({
+                    supplierName: $('#inpSupplierName').val(),
+                    name: $('#inpPricelistName').val(),
+                    preorderInDays: Number($('#inpPreorderInDays').val()),
+                    minStockAvail: Number($('#inpMinStockAvail').val()),
+                    isFavorite: $('#chkIsFavorite').is(':checked')
+                }),
+                success: function () {
+                    updatePricelistHeader();
+                    $('#settingsModal').modal('hide');
+                }
+            });
+        })
+
+        function startPull() {
+            $.ajax({
+                type: 'GET',
+                url: currentURL + "/pull",
+                async: true,
+                success: function (response) {
+                    clearInterval(updatePullStatusTimer);
+                    $('#pullStatus').html('Загрузка завершена.');
+                    $('#btnPullClose').removeAttr('disabled');
+                    $('#btnPullCloseHeader').removeAttr('disabled');
+                    updateLastPull();
+                    updateItemsToVerify();
+                    table.replaceData();
+                },
+                error: function () {
+                    $('#pullStatus').html('Невозможно с соединиться с сервером поставщика');
+                }
+            })
+        }
+
+        function updatePullStatus() {
+            $.ajax({
+                type: 'GET',
+                url: currentURL + "/pull/pullrecsprocessed",
+                success: function (response) {
+                    if (response == -1) {
+                        $('#pullStatus').html('Обработка изменений...');
+                    }
+                    else {
+                        $('#pullStatus').html('Загрузка... загружено ' + response + ' записей.');
+                    }
+                }
+            })
+        }
+
+        function updateLastPull() {
+            $.ajax({
+                type: 'GET',
+                url: currentURL + "/getLastPull",
+                success: function (response) {
+                    $('#lastUpdate').html(response);
+                }
+            })
+        }
+
+        function updateItemsToVerify() {
+            $.ajax({
+                type: 'GET',
+                url: currentURL + "/getItemsToVerifyCount",
+                success: function (response) {
+                    if (response != 0) {
+                        $('#itemsToVerify').css('color', 'red');
+                    }
+                    else {
+                        $('#itemsToVerify').css('color', 'black');
+                    }
+                    $('#itemsToVerify').html(response);
+                }
+            })
+        }
+
+    </script>
+}

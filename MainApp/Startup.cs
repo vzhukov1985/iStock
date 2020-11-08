@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Core.Services;
 using DbCore;
 using DbCore.Models;
+using MainApp.Controllers.Pricelists;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -28,9 +31,12 @@ namespace MainApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            services.AddControllersWithViews()
+                .AddNewtonsoftJson();
 
             services.AddDbContext<MainDbContext>();
+
+            services.AddSingleton<HttpClient>();
 
             //TODO: Delete after deployment
             services.AddLiveReload();

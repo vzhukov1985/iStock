@@ -1,159 +1,286 @@
-﻿@model HomeVM
-@{
+﻿@{
+    Layout = "_ListOfPricelistsLayout";
     ViewData["Title"] = "Список поставщиков";
 }
-<div class="container-fluid d-flex flex-column px-5" style="height:100vh;">
-    <div class="row text-left ml-5 align-content-end" style="height: 20%;">
-        <div class="row">
-            <div>
-                <h1 class="display-3 mb-0" style="line-height: 90%;">iStock</h1>
-                <p style="font-size:small; line-height: 100%; margin-top: 0px;">Система парсинга прайс-листов</p>
-            </div>
+<div class="row text-left ml-5 align-content-end" style="height: 20%;">
+    <div class="row">
+        <div>
+            <h1 class="display-3 mb-0" style="line-height: 90%;">iStock</h1>
+            <p style="font-size:small; line-height: 100%; margin-top: 0px;">Система парсинга прайс-листов</p>
         </div>
     </div>
-
-    <div class="row" style="max-height:60%">
-        <div class="col">
-            <div id="pricelists-table"></div>
-
-            <!--
-    <table id="pltable" class="table table-sm table-bordered mb-0 table-hover"
-           data-toggle="table"
-           data-search="true">
-        <thead>
-            <tr style="background: #1b6ec2; color: white;">
-                <th data-field="id" data-visible="true" data-selector="">Id</th>
-                <th data-field="supplierName" data-sortable="true">Поставщик</th>
-                <th data-field="name" data-sortable="true">Название</th>
-                <th data-field="lastUpdate" data-sortable="true">Последняя загрузка</th>
-                <th data-field="uncheckedCount" data-sortable="true">Непроверенных позиций</th>
-            </tr>
-        </thead>
-    </table>
-        -->
-        </div>
-    </div>
-
-
-    <div class="row mt-3 px-2">
-        <div class="col">
-            <button type="button" id="btnView" class="btn btn-primary mr-3 btn-home" disabled>Просмотреть</button>
-            <button type="button" id="btnSettings" class="btn btn-success mr-3 btn-home" disabled data-toggle="modal" data-target="#settingsModal">Настройки</button>
-            <button type="button" id="btnPull" class="btn btn-info mr-3 btn-home" disabled>Загрузить</button>
-        </div>
-        <div class="col-2">
-            <button type="button" class="btn btn-warning float-right btn-home">Выйти</button>
-        </div>
-    </div>
-
-    <!-- Modal dialogs-->
-    <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="settingsModalTitle">Настройки прайс-листа</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-
-                <div class="modal-body">
-                    <form>
-                        <div class="row">
-                            <div class="col-6">
-                                <label for="inpSupplierName">Поставщик</label>
-                                <input type="text" class="form-control" id="inpSupplierName" required>
-                            </div>
-                            <div class="col-6">
-                                <label for="inpPricelistName">Название</label>
-                                <input type="text" class="form-control" id="inpPricelistName" required>
-                            </div>
-                        </div>
-
-                        <div class="row mt-3">
-                            <div class="col-6 d-inline-flex">
-                                <label for="inpPreorderInDays" class="text-nowrap mr-2" style="margin-top:2px;">Предзаказ в днях:</label>
-                                <input type="number" class="form-control form-control-sm" id="inpPreorderInDays" required>
-                            </div>
-
-                            <div class="col-6 d-inline-flex">
-                                <label for="inpMinStockAvail" class="text-nowrap mr-2" style="margin-top:2px;">Мин. кол-во:</label>
-                                <input type="number" class="form-control form-control-sm" id="inpMinStockAvail" required>
-                            </div>
-                        </div>
-
-                        <div class="row mt-2">
-                            <div class="col">
-                                <input type="checkbox" class="custom-checkbox mr-2" id="chkIsFavorite" required>
-                                <label for="chkIsFavorite">Парсить цены по товарам</label>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary">Сохранить</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
+
+<div class="row mt-4" style="max-height:60%">
+    <div class="col">
+        <p class="mb-1 ml-2">Список прайс-листов:</p>
+        <div id="pricelists-table"></div>
+    </div>
+</div>
+
+
+<div class="row mt-2 px-2">
+    <div class="col">
+        <button type="button" id="btnView" class="btn btn-primary mr-3 btn-home" disabled>Просмотреть</button>
+        <button type="button" id="btnShowSettings" class="btn btn-success mr-3 btn-home" disabled>Настройки</button>
+        <button type="button" id="btnPull" class="btn btn-info mr-3 btn-home" disabled>Загрузить</button>
+    </div>
+    <div class="col-2">
+        <button type="button" class="btn btn-warning float-right btn-home">Выйти</button>
+    </div>
+</div>
+
+<!-- Modal dialogs-->
+<div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="settingsModalTitle">Настройки прайс-листа</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form>
+                    <div class="form-row form-group">
+                        <div class="col-6">
+                            <label for="inpSupplierName">Поставщик</label>
+                            <input type="text" class="form-control" id="inpSupplierName" required>
+                        </div>
+                        <div class="col-6">
+                            <label for="inpPricelistName">Название</label>
+                            <input type="text" class="form-control" id="inpPricelistName" required>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-6 d-inline-flex">
+                            <label for="inpPreorderInDays" class="text-nowrap mr-2" style="margin-top:2px;">Предзаказ в днях:</label>
+                            <input type="number" class="form-control form-control-sm" id="inpPreorderInDays" required>
+                        </div>
+
+                        <div class="col-6 d-inline-flex">
+                            <label for="inpMinStockAvail" class="text-nowrap mr-2" style="margin-top:2px;">Мин. кол-во:</label>
+                            <input type="number" class="form-control form-control-sm" id="inpMinStockAvail" required>
+                        </div>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col">
+                            <input type="checkbox" class="custom-checkbox mr-2" id="chkIsFavorite" required>
+                            <label for="chkIsFavorite">Парсить цены по товарам</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button id="btnSaveSettings" type="button" class="btn btn-primary">Сохранить</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="pullModal" tabindex="-1" role="dialog" aria-labelledby="pullModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pullModalTitle">Загрузка прайс-листа поставщика</h5>
+                <button id="btnPullCloseHeader" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <p id="pullStatus">Соединение...</p>
+            </div>
+
+            <div class="modal-footer">
+                <button id="btnPullClose" type="button" class="btn btn-primary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @section Scripts
 {
     <script>
+        window.addEventListener("pageshow", function (event) {
+            var historyTraversal = event.persisted ||
+                (typeof window.performance != "undefined" &&
+                    window.performance.navigation.type === 2);
+            if (historyTraversal) {
+                // Handle page restore.
+                window.location.reload();
+            }
+        });
+
+        var updatePullStatusTimer;
+
         var table = new Tabulator("#pricelists-table", {
-            height: 205,
+            maxHeight: "100%",
             ajaxURL: "/pricelists/getallbrief",
-            layout: "fitColumns", 
-            columns: [ 
-                { title: "Поставщик", field:"supplierName"},
+            layout: "fitColumns",
+            headerSortElement: "&#9650;",
+            selectable: "1",
+            columns: [
+                { title: "Поставщик", field: "supplierName" },
                 { title: "Название", field: "name" },
-                { title: "Последняя загрузка", field: "lastUpdate" },
-                { title: "Непроверенных наименований", field: "uncheckedCount" }
+                { title: "Последняя загрузка", field: "lastPull", formatter: nullDateFormatter },
+                { title: "Непроверенных наименований", field: "itemsToVerify", formatter: itemsToVerifyFormatter }
             ],
             rowClick: function (e, row) {
-                alert("Row " + row.getData().id + " Clicked!!!!");
+                enableButtons();
             },
         });
 
-        @*$(document).ready(loadPricelistsBriefData());
 
-        //Selection/deselection of pricelist
-        $('#pltable').bootstrapTable({
-            onClickRow: function (row, $element, field) {
-                $element.addClass('table-active').siblings().removeClass('table-active');
-                $('#btnView').removeAttr('disabled');
-                $('#btnSettings').removeAttr('disabled');
-                $('#btnPull').removeAttr('disabled');
-            },
-            onSort: function (name, order) { disableButtons(); },
-            onSearch: function (text) { disableButtons(); }
-        });
+        //        updatePricelistsInfo();
 
-        $('#btnSettings').bind('click', function () {
-            alert($('.table-active').first().children('td').first().html());
-        });
+        //        function updatePricelistsInfo() {
 
-        function loadPricelistsBriefData() {
+        //        }
+
+        function nullDateFormatter(cell, formatterParams, onRendered) {
+            if (cell.getValue() == null) { return "Нет"; }
+            else { return cell.getValue(); }
+        }
+
+        function itemsToVerifyFormatter(cell, formatterParams, onRendered) {
+            if (cell.getValue() == 0) {
+                cell.getElement().style.color = "black";
+            }
+            else {
+                cell.getElement().style.color = "red";
+            }
+            return cell.getValue();
+        }
+
+        function enableButtons() {
+            $('#btnView').removeAttr('disabled');
+            $('#btnShowSettings').removeAttr('disabled');
+            $('#btnPull').removeAttr('disabled');
+        }
+
+        $('#btnView').on('click', function () {
+            window.location = table.getSelectedData()[0].controller;
+        })
+
+        $('#btnShowSettings').on('click', function () {
             $.ajax({
                 type: 'GET',
-                url: '/pricelists/getallbrief',
+                url: "/pricelists/plsettings/" + table.getSelectedData()[0].id,
                 datatype: "json",
-                success: function (data) {
-                    $('#pltable').bootstrapTable('load', data);
+                success: function (response) {
+                    $('#inpSupplierName').val(response.supplierName);
+                    $('#inpPricelistName').val(response.name);
+                    $('#inpPreorderInDays').val(response.preorderInDays);
+                    $('#inpMinStockAvail').val(response.minStockAvail);
+                    $('#chkIsFavorite').prop('checked', response.isFavorite);
+                    $('#settingsModal').modal('show');
+                }
+            });
+        })
+
+        $('#btnPull').on('click', function () {
+            $('#btnPullClose').prop('disabled', true);
+            $('#btnPullCloseHeader').prop('disabled', true);
+            $('#pullStatus').html('Соединение...');
+            $('#pullModal').modal('show');
+            $.ajax({
+                type: 'GET',
+                url: "/" + table.getSelectedData()[0].controller + "/pull/ispulling",
+                success: function (response) {
+                    if (response == false) {
+                        $('#pullStatus').html('Загрузка...');
+                        startPull();
+                    }
+                    updatePullStatusTimer = setInterval(updatePullStatus, 200);
+                },
+                error: function () {
+                    $('#pullStatus').html('Невозможно с соединиться с сервером поставщика');
+                    $('#btnPullClose').removeAttr('disabled');
+                    $('#btnPullCloseHeader').removeAttr('disabled');
                 }
             })
-        };
+        })
 
-        function disableButtons() {
-            $('#btnView').prop('disabled',true);
-            $('#btnSettings').prop('disabled', true);
-            $('#btnPull').prop('disabled', true);
+        function startPull() {
+            $.ajax({
+                type: 'GET',
+                url: "/" + table.getSelectedData()[0].controller + "/pull",
+                async: true,
+                success: function (response) {
+                    clearInterval(updatePullStatusTimer);
+                    $('#pullStatus').html('Загрузка завершена.');
+                    $('#btnPullClose').removeAttr('disabled');
+                    $('#btnPullCloseHeader').removeAttr('disabled');
+                    updateLastPull();
+                    updateItemsToVerify();
+                },
+                error: function () {
+                    $('#pullStatus').html('Невозможно с соединиться с сервером поставщика');
+                }
+            })
+        }
 
-        }*@
+        function updatePullStatus() {
+            $.ajax({
+                type: 'GET',
+                url: "/" + table.getSelectedData()[0].controller + "/pull/pullrecsprocessed",
+                success: function (response) {
+                    if (response == -1) {
+                        $('#pullStatus').html('Обработка изменений...');
+                    }
+                    else {
+                        $('#pullStatus').html('Загрузка... загружено ' + response + ' записей.');
+                    }
+                }
+            })
+        }
 
+        function updateLastPull() {
+            $.ajax({
+                type: 'GET',
+                url: "/pricelists/getlastpull/" + table.getSelectedData()[0].id,
+                success: function (response) {
+                    table.updateData([{ id: table.getSelectedData()[0].id, lastPull: response }])
+                }
+            })
+        }
+
+        function updateItemsToVerify() {
+            $.ajax({
+                type: 'GET',
+                url: "/pricelists/getItemsToVerify/" + table.getSelectedData()[0].id,
+                success: function (response) {
+                    table.updateData([{ id: table.getSelectedData()[0].id, itemsToVerify: response }])
+                }
+            })
+        }
+
+        $('#btnSaveSettings').on('click', function () {
+            $.ajax({
+                type: 'POST',
+                url: "/pricelists/plsettings/" + table.getSelectedData()[0].id,
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify({
+                    supplierName: $('#inpSupplierName').val(),
+                    name: $('#inpPricelistName').val(),
+                    preorderInDays: Number($('#inpPreorderInDays').val()),
+                    minStockAvail: Number($('#inpMinStockAvail').val()),
+                    isFavorite: $('#chkIsFavorite').is(':checked')
+                }),
+                success: function () {
+                    var sel = table.getSelectedData()[0];
+                    table.updateData([{ id: sel.id, name: $('#inpPricelistName').val(), supplierName: $('#inpSupplierName').val() }]);
+                    $('#settingsModal').modal('hide');
+                }
+            });
+        })
 
     </script>
 }
