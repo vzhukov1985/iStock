@@ -21,11 +21,35 @@ namespace DbCore
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<TelegramUser>(TelegramUsersConfigure);
+
             modelBuilder.Entity<Pricelist>(PricelistsConfigure);
             modelBuilder.Entity<VectorOffer>(VecorOffersConfigure);
 
             //Pricelists
             modelBuilder.Entity<DynatoneOffer>(DynatoneConfigure);
+        }
+
+        protected void TelegramUsersConfigure(EntityTypeBuilder<TelegramUser> builder)
+        {
+            builder.ToTable("telegramusers");
+
+            builder.HasKey(p => p.Id)
+                   .HasName("PRIMARY");
+
+
+
+            builder.Property(p => p.Id)
+                .IsRequired()
+                .HasColumnType("char(36)");
+
+            builder.Property(p => p.TelegramUserId)
+                .IsRequired()
+                .HasColumnType("bigint(255)");
+
+            builder.Property(p => p.Role)
+                .IsRequired()
+                .HasColumnType("varchar(100)");
         }
 
         protected void PricelistsConfigure(EntityTypeBuilder<Pricelist> builder)
@@ -151,6 +175,11 @@ namespace DbCore
             builder.Property(o => o.Supplier)
                 .HasColumnName("Supplier")
                 .HasColumnType("varchar(300)");
+
+            builder.Property(o => o.PricelistId)
+                .IsRequired()
+                .HasColumnName("PricelistId")
+                .HasColumnType("char(36)");
         }
 
         protected void DynatoneConfigure(EntityTypeBuilder<DynatoneOffer> builder)
@@ -197,7 +226,7 @@ namespace DbCore
                 .HasColumnType("varchar(150)");
 
             builder.Property(p => p.Barcode)
-                .HasColumnType("bigint");
+                .HasColumnType("varchar(100)");
 
             builder.Property(p => p.Modifikaciya)
                 .HasColumnType("varchar(500)");
@@ -221,6 +250,8 @@ namespace DbCore
                 .HasColumnType("float(6,3)");
 
         }
+
+        public virtual DbSet<TelegramUser> TelegramUsers { get; set; }
 
         public virtual DbSet<Pricelist> Pricelists { get; set; }
         public virtual DbSet<VectorOffer> VectorOffers { get; set; }

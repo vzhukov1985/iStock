@@ -31,6 +31,7 @@ namespace DbCore.Models
         public int? PreorderInDays { get; set; }
         public bool? IsFavorite { get; set; }
         public string Supplier { get; set; }
+        public Guid PricelistId { get; set; }
         
         [NotMapped]
         public object this[string propertyName]

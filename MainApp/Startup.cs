@@ -8,6 +8,7 @@ using Core.Services;
 using DbCore;
 using DbCore.Models;
 using MainApp.Controllers.Pricelists;
+using MainApp.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -79,6 +80,8 @@ namespace MainApp
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}");
             });
+
+            TelegramOperatorBot.StartBot();
         }
     }
 }

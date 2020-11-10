@@ -13,11 +13,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "! - Info", "! - Info", "{F4E08132-B055-49F5-A378-1DE439AA5AF4}"
 	ProjectSection(SolutionItems) = preProject
 		Database.txt = Database.txt
+		TG_Bots.txt = TG_Bots.txt
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dynatone", "Dynatone\Dynatone.csproj", "{3B056BCA-7D0F-4F1F-9063-FC9E27835EA3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MainAppTests", "MainAppTests\MainAppTests.csproj", "{E6F98437-5472-4526-B1FC-291BA76A4173}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MainAppTests", "MainAppTests\MainAppTests.csproj", "{E6F98437-5472-4526-B1FC-291BA76A4173}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

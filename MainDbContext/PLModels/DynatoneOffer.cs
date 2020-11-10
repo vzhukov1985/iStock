@@ -17,7 +17,7 @@ namespace DbCore.PLModels
         public string Brand { get; set; }
         public string ModelSModifikaciyey { get; set; }
         public string Articul { get; set; }
-        public long? Barcode { get; set; }
+        public string Barcode { get; set; }
         public string Model { get; set; }
         public string Modifikaciya { get; set; }
         public string KodSPrefixom { get; set; }

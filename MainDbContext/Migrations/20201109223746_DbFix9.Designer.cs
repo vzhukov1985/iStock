@@ -3,14 +3,16 @@ using System;
 using DbCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DbCore.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    partial class MainDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201109223746_DbFix9")]
+    partial class DbFix9
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,25 +68,6 @@ namespace DbCore.Migrations
                     b.ToTable("pricelists");
                 });
 
-            modelBuilder.Entity("DbCore.Models.TelegramUser", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<long>("TelegramUserId")
-                        .HasColumnType("bigint(255)");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("telegramusers");
-                });
-
             modelBuilder.Entity("DbCore.Models.VectorOffer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -134,10 +117,6 @@ namespace DbCore.Migrations
                     b.Property<float?>("PriceLimit")
                         .HasColumnName("PriceLimit")
                         .HasColumnType("float(12,2)");
-
-                    b.Property<Guid>("PricelistId")
-                        .HasColumnName("PricelistId")
-                        .HasColumnType("char(36)");
 
                     b.Property<string>("Sku")
                         .HasColumnName("Sku")

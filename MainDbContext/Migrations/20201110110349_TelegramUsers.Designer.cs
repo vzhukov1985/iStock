@@ -3,14 +3,16 @@ using System;
 using DbCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DbCore.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    partial class MainDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201110110349_TelegramUsers")]
+    partial class TelegramUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -134,10 +136,6 @@ namespace DbCore.Migrations
                     b.Property<float?>("PriceLimit")
                         .HasColumnName("PriceLimit")
                         .HasColumnType("float(12,2)");
-
-                    b.Property<Guid>("PricelistId")
-                        .HasColumnName("PricelistId")
-                        .HasColumnType("char(36)");
 
                     b.Property<string>("Sku")
                         .HasColumnName("Sku")

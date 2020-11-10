@@ -4,33 +4,131 @@
 }
 
 <div class="row mt-2 justify-content-between" style="height:9.7%">
-    <div class="col-auto">
-        <h3 class=" mb-0" style="color:#1b6ec2; line-height:150%"><span id="supplierName"></span>&#160
-        <span class="h6 mt-0" style="color:#91C3F5" id="plName">Общий</span></h3>
-        <p style="font-size:x-small; line-height: 110%;">Последняя загрузка: <span id="lastUpdate">Нет</span><br />
-        Непросмотренных позиций: <span id="itemsToVerify">0</span></p>
+    <div class="col-10">
+        <h3 class=" mb-0" style="color:#1b6ec2; line-height:150%">
+            <span id="supplierName"></span>&#160
+            <span class="h6 mt-0" style="color:#91C3F5" id="plName">Общий</span>
+        </h3>
+        <p style="font-size:x-small; line-height: 110%;">
+            Последняя загрузка: <span id="lastUpdate">Нет</span><br />
+            Непросмотренных позиций: <span id="itemsToVerify">0</span>
+        </p>
     </div>
-    <div class="col-auto">
+    <div class="col-2">
         <h1 class="display-4 mb-0" style="line-height: 90%;">iStock</h1>
         <p style="font-size:x-small; line-height: 100%; margin-top: 0px;">Система парсинга прайс-листов</p>
     </div>
 </div>
 
-<div class="row mt-1">
-    <div class="col-12">
+<div class="row mt-1 pr-0 d-inline-flex w-100">
+    <div class="col-6">
         <button type="button" id="btnPull" class="btn btn-success mr-1 btn-sm">Загрузить</button>
         <button type="button" id="btnPush" class="btn btn-success mr-1 btn-sm" disabled>Выгрузить</button>
-        <button type="button" id="btnDownload" class="btn btn-success mr-1 btn-sm">Скачать XLS</button>
-        <button type="button" id="btnSettings" class="btn btn-warning mr-1 btn-sm">Настройки</button>
+        <button type="button" id="btnDownload" class="btn btn-success mr-1 btn-sm" data-toggle="modal" data-target="#downloadXLSModal">Скачать XLS</button>
+        <button type="button" id="btnSettings" class="btn btn-warning mr-1 btn-sm" data-toggle="modal" data-target="#plSettingsModal">Настройки</button>
+    </div>
+
+    <div class="col-4 d-inline-flex justify-content-end">
+        <button class="btn btn-primary mr-3 btn-sm dropdown-toggle" type="button" id="btnFilter" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Фильтр</button>
+        <div class="dropdown-menu"  aria-labelledby="btnFilter">
+
+            <ul class="pl-filter-menu" style="list-style:none; padding:0px 10px; margin-bottom:0">
+                <li>
+                    <label>
+                        <input id="filterAll" type="checkbox" checked> Все
+                    </label>
+                </li>
+                <li class="dropdown-divider">
+                </li>
+                <li>
+                    <label>
+                        <input id="filterVerified" type="checkbox" checked> Просмотренные
+                    </label>
+                </li>
+                <li>
+                    <label>
+                        <input id="filterUnverified" type="checkbox" checked> Непросмотренные
+                    </label>
+                </li>
+                <li class="dropdown-divider">
+                </li>
+                <li>
+                    <label>
+                        <input id="filterIncluded" type="checkbox" checked> Включенные в базу
+                    </label>
+                </li>
+                <li>
+                    <label>
+                        <input id="filterExcluded" type="checkbox" checked> Исключенные из базы
+                    </label>
+                </li>
+                <li class="dropdown-divider">
+                </li>
+                <li>
+                    <label>
+                        <input id="filterAvailable" type="checkbox" checked> Есть в наличии
+                    </label>
+                </li>
+                <li>
+                    <label>
+                        <input id="filterUnavailable" type="checkbox" checked> Нет в наличии
+                    </label>
+                </li>
+            </ul>
+        </div>
+        <input type="text" class="form-control form-control-sm mr-1 w-50" id="inpSearchText" placeholder="Поиск...">
+        <button type="button" id="btnClearSearch" class="btn btn-primary btn-sm mr-0">Очистить</button>
+    </div>
+
+    <div class="col-2 mt-1">
+        <b style="color:#1b6ec2">Данные поставщика:</b>
     </div>
 </div>
 
-<div class="row mt-1" style="max-height:80%">
+<div class="row mt-1 d-inline-flex w-100" style="max-height:80%">
     <div class="col-10">
-        <div id="table" style="width:78vw"></div>
+        <div id="table"></div>
     </div>
-    <div class="col-2">
-        <p>asd</p>
+    <div class="col-2" style="height:80vh; border: 1px solid #666666; border-radius: 5px; font-size:small; overflow:scroll">
+        <span><b>Код:</b></span>
+        <span id="Kod"></span><br />
+        <span><b>Код Группы:</b></span>
+        <span id="KodGruppy"></span><br />
+        <span><b>Наименование:</b></span>
+        <span id="Naimenovanie"></span><br />
+        <span><b>РРЦ:</b></span>
+        <span id="RRC"></span><br />
+        <span><b>Цена дилер:</b></span>
+        <span id="CenaDiler"></span><br />
+        <span><b>Кол-во для опта:</b></span>
+        <span id="KolichestvoDlyaOpta"></span><br />
+        <span><b>Вид номенклатуры:</b></span>
+        <span id="VidNomenklatury"></span><br />
+        <span><b>Бренд:</b></span>
+        <span id="Brand"></span><br />
+        <span><b>Модель c модификацией:</b></span>
+        <span id="ModelSModifikaciyey"></span><br />
+        <span><b>Артикул:</b></span>
+        <span id="Articul"></span><br />
+        <span><b>Баркод:</b></span>
+        <span id="Barcode"></span><br />
+        <span><b>Модель:</b></span>
+        <span id="Model"></span><br />
+        <span><b>Модификация:</b></span>
+        <span id="Modifikaciya"></span><br />
+        <span><b>Код с префиксом:</b></span>
+        <span id="KodSPrefixom"></span><br />
+        <span><b>Страна происхождения:</b></span>
+        <span id="StranaProishojdenia"></span><br />
+        <span><b>Вес:</b></span>
+        <span id="Ves"></span><br />
+        <span><b>Длина:</b></span>
+        <span id="Dlina"></span><br />
+        <span><b>Ширина:</b></span>
+        <span id="Shirina"></span><br />
+        <span><b>Высота:</b></span>
+        <span id="Vysota"></span><br />
+
     </div>
 </div>
 
@@ -56,93 +154,57 @@
     </div>
 </div>
 
-<div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalTitle" aria-hidden="true">
+<div class="modal fade" id="downloadXLSModal" tabindex="-1" role="dialog" aria-labelledby="downloadXLSModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="settingsModalTitle">Настройки прайс-листа</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <h5 class="modal-title" id="downloadXLSlModalTitle">Сформировать Excel-файл</h5>
+                <button id="btnDownloadXLSHeader" type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
 
             <div class="modal-body">
-                <form>
-                    <div class="form-row form-group">
-                        <div class="col-6">
-                            <label for="inpSupplierName">Поставщик</label>
-                            <input type="text" class="form-control" id="inpSupplierName" required>
-                        </div>
-                        <div class="col-6">
-                            <label for="inpPricelistName">Название</label>
-                            <input type="text" class="form-control" id="inpPricelistName" required>
-                        </div>
+                <div class="row">
+                    <div class="col">
+                        <input id="chkIncludeExcluded" type="checkbox" class="custom-checkbox mr-2" required>
+                        <label for="chkIncludeExcluded">Включить исключенные товары</label>
                     </div>
-
-                    <div class="row mt-3">
-                        <div class="col-6 d-inline-flex">
-                            <label for="inpPreorderInDays" class="text-nowrap mr-2" style="margin-top:2px;">Предзаказ в днях:</label>
-                            <input type="number" class="form-control form-control-sm" id="inpPreorderInDays" required>
-                        </div>
-
-                        <div class="col-6 d-inline-flex">
-                            <label for="inpMinStockAvail" class="text-nowrap mr-2" style="margin-top:2px;">Мин. кол-во:</label>
-                            <input type="number" class="form-control form-control-sm" id="inpMinStockAvail" required>
-                        </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <input id="chkIncludeUnavailable" type="checkbox" class="custom-checkbox mr-2" required>
+                        <label for="chkIncludeUnavailable">Включить товары, которых нет в наличии</label>
                     </div>
-
-                    <div class="row mt-2">
-                        <div class="col">
-                            <input type="checkbox" class="custom-checkbox mr-2" id="chkIsFavorite" required>
-                            <label for="chkIsFavorite">Парсить цены по товарам</label>
-                        </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <input id="chkIncludeUnverified" type="checkbox" class="custom-checkbox mr-2" required>
+                        <label for="chkIncludeUnverified">Включить непросмотренные товары</label>
                     </div>
-
-                    <div class="row mt-1">
-                        <div class="col">
-                            <label class="text-nowrap">Курс валюты (KZT/<span id="currency"></span>):</label>
-                        </div>
-                    </div>
-                    <div class="row mt-0">
-                        <div class="col">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="exchangeRateType" id="exchangeRateAuto" value="exchangeRateAuto">
-                                <label class="form-check-label" for="exchangeRateAuto">Курс НацБанка</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="exchangeRateType" id="exchangeRateCustom" value="exchangeRateCustom">
-                                <input type="number" class="form-control form-control-sm w-50" id="exchangeRateVal" required>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                </div>
             </div>
 
             <div class="modal-footer">
-                <button id="btnSaveSettings" type="button" class="btn btn-primary">Сохранить</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                <button id="btnDownloadXLSGenerate" type="button" class="btn btn-primary">Сформировать</button>
+                <button id="btnDownloadXLSClose" type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
             </div>
         </div>
     </div>
 </div>
 
+@await Html.PartialAsync("_PlSettingsModal")
+
 @section Scripts
 {
     <script>
-        var currentURL = window.location.pathname;
         var updatePullStatusTimer;
         var cellCustomColor = "#EAF746";
-
-        function updatePricelistHeader() {
-            $.ajax({
-                type: 'GET',
-                url: currentURL + "/getPricelistHeader",
-                success: function (response) {
-                    $('#supplierName').html(response.supplierName);
-                    $('#plName').html(response.name);
-                }
-            })
-        }
+        var controllerName = "dynatone";
+        var filter = [[{ field: '', type: '', value: '' }]];
+        var xlsIncludeUnavailable;
+        var xlsIncludeExcluded;
+        var xlsIncludeUnverified;
 
         var cmIsVerifiedHeader = [
             {
@@ -261,7 +323,7 @@
 
         var table = new Tabulator("#table", {
             height: "80vh",
-            ajaxURL: currentURL + "/getbriefdata",
+            ajaxURL: "/" + controllerName + "/getbriefdata",
             headerSortElement: "&#9650;",
             selectable: true,
             selectableRangeMode: "click",
@@ -270,6 +332,7 @@
             tooltips: cellToolTip,
             cellEdited: cellEdited,
             cellEditCancelled: cellEditCancelled,
+            rowClick: showSupplierItemData,
             columns: [
                 {
                     title: "",
@@ -297,6 +360,7 @@
                     title: "Код группы",
                     field: "groupCode",
                     width: 120,
+                    formatter: groupCodeFormatter,
                     contextMenu: cmCodeGroupCell.concat(cmGeneral)
                 },
                 {
@@ -331,7 +395,8 @@
                 {
                     title: "Цена (тг)",
                     field: "price",
-                    widthGrow: 0.24,
+                    minWidth:100,
+                    widthGrow: 0.2,
                     editor: "number",
                     editable: false,
                     formatter: dataFormatter,
@@ -341,7 +406,8 @@
                 {
                     title: "Лимит цены (тг)",
                     field: "priceLimit",
-                    widthGrow: 0.37,
+                    minWidth:155,
+                    widthGrow: 0.4,
                     editor: "number",
                     editable: false,
                     formatter: dataFormatter,
@@ -353,12 +419,22 @@
 
         //*** OnLoadCode
 
-        table.setSort([{ column: "groupCode", dir: "asc" }]);
         updatePricelistHeader();
         updateLastPull();
         updateItemsToVerify();
+        setFilterAll();
 
         //***
+        function updatePricelistHeader() {
+            $.ajax({
+                type: 'GET',
+                url: "/" + controllerName + "/getPricelistHeader",
+                success: function (response) {
+                    $('#supplierName').html(response.supplierName);
+                    $('#plName').html(response.name);
+                }
+            })
+        }
 
         function isVerifiedFormatter(cell, formatterParams, onRendered) {
             if (cell.getValue() == 0) {
@@ -398,10 +474,18 @@
             }
         }
 
+        function groupCodeFormatter(cell, formatterParams, onRendered) {
+            setTextColorByIsAvailable(cell);
+            return cell.getValue();
+        }
+
         function dataFormatter(cell, formatterParams, onRendered) {
             var field = cell.getField();
             var value = cell.getValue();
             var capitalizedField = field.charAt(0).toUpperCase() + field.substring(1);
+
+            setTextColorByIsAvailable(cell);
+
             if (cell.getData()['is' + capitalizedField + 'Custom'] == true) {
                 cell.getElement().style.backgroundColor = cellCustomColor;
             }
@@ -412,15 +496,24 @@
             if ((capitalizedField == "Price" || capitalizedField == "PriceLimit") && (value != null)) {
                 var strVal = String(value.toFixed(2));
                 if (strVal.substr(strVal.length - 3) == ".00") {
-                    return Number(value).toLocaleString();
+                    return Number(value).toLocaleString('ru');
                 }
                 else {
-                    return Number(value).toFixed(2).toLocaleString();
+                    return Number(value).toFixed(2).toLocaleString('ru');
                 }
 
             }
             else {
                 return value;
+            }
+        }
+
+        function setTextColorByIsAvailable(cell) {
+            if (cell.getData().isAvailable == true) {
+                cell.getElement().style.color = "black";
+            }
+            else {
+                cell.getElement().style.color = "darkgray";
             }
         }
 
@@ -469,7 +562,7 @@
             var rowData = cell.getData();
             $.ajax({
                 type: 'POST',
-                url: currentURL + "/setCustomValue/" + rowData.id,
+                url: "/" + controllerName + "/setCustomValue/" + rowData.id,
                 contentType: "application/json;charset=utf-8",
                 data: JSON.stringify({ field: cell.getField(), value: cell.getValue() }),
                 success: function () {
@@ -488,7 +581,7 @@
         function setIsVerifiedById(id, value) {
             $.ajax({
                 type: 'POST',
-                url: currentURL + "/setIsVerified/" + id,
+                url: "/" + controllerName + "/setIsVerified/" + id,
                 contentType: "application/json;charset=utf-8",
                 data: JSON.stringify(value),
                 success: function () {
@@ -496,13 +589,13 @@
                     updateItemsToVerify();
                 }
             })
-            
+
         }
 
         function setStatusById(id, value) {
             $.ajax({
                 type: 'POST',
-                url: currentURL + "/setStatus/" + id,
+                url: "/" + controllerName + "/setStatus/" + id,
                 contentType: "application/json;charset=utf-8",
                 data: JSON.stringify(value),
                 success: function () { table.updateData([{ id: id, status: value }]); }
@@ -514,7 +607,7 @@
             if (confirm('ВНИМАНИЕ!!! Изменение коснется всех записей таблицы. Вы уверены, что хотите продолжить?')) {
                 $.ajax({
                     type: 'POST',
-                    url: currentURL + "/setAllIsVerified",
+                    url: "/" + controllerName + "/setAllIsVerified",
                     contentType: "application/json;charset=utf-8",
                     data: JSON.stringify(vvalue),
                     success: function () {
@@ -531,7 +624,7 @@
             if (confirm('ВНИМАНИЕ!!! Изменение коснется всех записей таблицы. Вы уверены, что хотите продолжить?')) {
                 $.ajax({
                     type: 'POST',
-                    url: currentURL + "/setAllStatus",
+                    url: "/" + controllerName + "/setAllStatus",
                     contentType: "application/json;charset=utf-8",
                     data: JSON.stringify(svalue),
                     success: function () {
@@ -546,7 +639,7 @@
         function setGroupStatus(groupCode, svalue) {
             $.ajax({
                 type: 'POST',
-                url: currentURL + "/setGroupStatus",
+                url: "/" + controllerName + "/setGroupStatus",
                 contentType: "application/json;charset=utf-8",
                 data: JSON.stringify({ groupCode: groupCode, value: svalue }),
                 success: function () {
@@ -562,7 +655,7 @@
         function setCellDefaultValue(cell) {
             $.ajax({
                 type: 'POST',
-                url: currentURL + "/setDefaultValue/" + cell.getData().id,
+                url: "/" + controllerName + "/setDefaultValue/" + cell.getData().id,
                 contentType: "application/json;charset=utf-8",
                 data: JSON.stringify(cell.getField()),
                 success: function (response) {
@@ -587,7 +680,7 @@
             $('#pullModal').modal('show');
             $.ajax({
                 type: 'GET',
-                url: currentURL + "/pull/ispulling",
+                url: "/" + controllerName + "/pull/ispulling",
                 success: function (response) {
                     if (response == false) {
                         $('#pullStatus').html('Загрузка...');
@@ -603,53 +696,12 @@
             })
         })
 
-        $('#btnSettings').on('click', function () {
-            $.ajax({
-                type: 'GET',
-                url: currentURL + "/settings",
-                datatype: "json",
-                success: function (response) {
-                    $('#inpSupplierName').val(response.supplierName);
-                    $('#inpPricelistName').val(response.name);
-                    $('#inpPreorderInDays').val(response.preorderInDays);
-                    $('#inpMinStockAvail').val(response.minStockAvail);
-                    $('#chkIsFavorite').prop('checked', response.isFavorite);
-                    $('#currency').html(response.exchangeRateCurrency);
-                    if (response.isAutoExchangeRate) {
-                        $('#exchangeRateAuto').prop('checked', true);
-                    }
-                    else {
-                        $('#exchangeRateCustom').prop('checked', true);
-                    }
-                    $('#exchangeRateVal').val(response.exchangeRate);
-                    $('#settingsModal').modal('show');
-                }
-            });
-        })
 
-        $('#btnSaveSettings').on('click', function () {
-            $.ajax({
-                type: 'POST',
-                url: currentURL + "/settings",
-                contentType: "application/json;charset=utf-8",
-                data: JSON.stringify({
-                    supplierName: $('#inpSupplierName').val(),
-                    name: $('#inpPricelistName').val(),
-                    preorderInDays: Number($('#inpPreorderInDays').val()),
-                    minStockAvail: Number($('#inpMinStockAvail').val()),
-                    isFavorite: $('#chkIsFavorite').is(':checked')
-                }),
-                success: function () {
-                    updatePricelistHeader();
-                    $('#settingsModal').modal('hide');
-                }
-            });
-        })
 
         function startPull() {
             $.ajax({
                 type: 'GET',
-                url: currentURL + "/pull",
+                url: "/" + controllerName + "/pull",
                 async: true,
                 success: function (response) {
                     clearInterval(updatePullStatusTimer);
@@ -669,7 +721,7 @@
         function updatePullStatus() {
             $.ajax({
                 type: 'GET',
-                url: currentURL + "/pull/pullrecsprocessed",
+                url: "/" + controllerName + "/pull/pullrecsprocessed",
                 success: function (response) {
                     if (response == -1) {
                         $('#pullStatus').html('Обработка изменений...');
@@ -684,7 +736,7 @@
         function updateLastPull() {
             $.ajax({
                 type: 'GET',
-                url: currentURL + "/getLastPull",
+                url: "/" + controllerName + "/getLastPull",
                 success: function (response) {
                     $('#lastUpdate').html(response);
                 }
@@ -694,7 +746,7 @@
         function updateItemsToVerify() {
             $.ajax({
                 type: 'GET',
-                url: currentURL + "/getItemsToVerifyCount",
+                url: "/" + controllerName + "/getItemsToVerifyCount",
                 success: function (response) {
                     if (response != 0) {
                         $('#itemsToVerify').css('color', 'red');
@@ -705,6 +757,268 @@
                     $('#itemsToVerify').html(response);
                 }
             })
+        }
+
+        function showSupplierItemData(e, row) {
+            $.ajax({
+                type: 'GET',
+                url: "/" + controllerName + "/getSupplierItemData/" + row.getData().id,
+                success: function (response) {
+                    $('#Kod').html(response.kod);
+                    $('#KodGruppy').html(response.kodGruppy);
+                    $('#Naimenovanie').html(response.naimenovanie);
+                    $('#RRC').html(response.rRC);
+                    $('#CenaDiler').html(response.cenaDiler);
+                    $('#KolichestvoDlyaOpta').html(response.kolichestvoDlyaOpta);
+                    $('#VidNomenklatury').html(response.vidNomenklatury);
+                    $('#Brand').html(response.brand);
+                    $('#ModelSModifikaciyey').html(response.modelSModifikaciyey);
+                    $('#Articul').html(response.articul);
+                    $('#Barcode').html(response.barcode);
+                    $('#Model').html(response.model);
+                    $('#Modifikaciya').html(response.modifikaciya);
+                    $('#KodSPrefixom').html(response.kodSPrefixom);
+                    $('#StranaProishojdenia').html(response.stranaProishojdenia);
+                    $('#Ves').html(response.ves);
+                    $('#Dlina').html(response.dlina);
+                    $('#Shirina').html(response.shirina);
+                    $('#Vysota').html(response.vysota);
+                }
+            })
+        }
+
+        $('#btnClearSearch').on('click', function () {
+            $('#inpSearchText').val('');
+            filter[3] = [];
+            table.setFilter(filter);
+        })
+
+        $('#inpSearchText').on('keyup', function () {
+            setFilterAll();
+            updateTextSearchFilter();
+        })
+
+        function updateTextSearchFilter() {
+            var searchText = $('#inpSearchText').val();
+            filter[3] =
+                [
+                    { field: "sku", type: "like", value: searchText },
+                    { field: "brand", type: "like", value: searchText },
+                    { field: "name", type: "like", value: searchText },
+                ];
+            table.setFilter(filter);
+        }
+
+        function setFilterAll() {
+            filter[0] =
+                [
+                    { field: 'sku', type: '=', value: "qwekjsldkfjklsdfj" },
+                    { field: 'isVerified', type: '=', value: true },
+                    { field: 'isVerified', type: '=', value: false },
+                ];
+                filter[1] =   [
+                    { field: 'sku', type: '=', value: "qwekjsldkfjklsdfj" },
+                    { field: 'status', type: '=', value: 1 },
+                    { field: 'status', type: '!=', value: 1 },
+                ];
+                filter[2] = [
+                    { field: 'sku', type: '=', value: "qwekjsldkfjklsdfj" },
+                    { field: 'isAvailable', type: '=', value: true },
+                    { field: 'isAvailable', type: '=', value: false },
+                ];
+            table.clearFilter();
+            table.setFilter(filter);
+            $('#filterAll').prop('checked', true);
+            $('#filterVerified').prop('checked', true);
+            $('#filterUnverified').prop('checked', true);
+            $('#filterIncluded').prop('checked', true);
+            $('#filterExcluded').prop('checked', true);
+            $('#filterAvailable').prop('checked', true);
+            $('#filterUnavailable').prop('checked', true);
+        }
+
+        $('#filterAll').change(function () {
+            setFilterAll();
+        })
+
+        $('#filterVerified').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[0].push({ field: 'isVerified', type: '=', value: true });
+            }
+            else {
+                filter[0] = $.grep(filter[0], function (val) {
+                    return !(val.field == 'isVerified' && val.type == '=' && val.value == true);
+                });
+            }
+            table.setFilter(filter);
+        })
+
+        $('#filterUnverified').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[0].push({ field: 'isVerified', type: '=', value: false });
+            }
+            else {
+                filter[0] = $.grep(filter[0], function (val) {
+                    return !(val.field == 'isVerified' && val.type == '=' && val.value == false);
+                });
+            }
+            table.setFilter(filter);
+        })
+
+        $('#filterAvailable').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[2].push({ field: 'isAvailable', type: '=', value: true });
+            }
+            else {
+                filter[2] = $.grep(filter[2], function (val) {
+                    return !(val.field == 'isAvailable' && val.type == '=' && val.value == true);
+                });
+            }
+            table.setFilter(filter);
+        })
+
+        $('#filterIncluded').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[1].push({ field: 'status', type: '=', value: 1 });
+            }
+            else {
+                filter[1] = $.grep(filter[1], function (val) {
+                    return !(val.field == 'status' && val.type == '=' && val.value == 1);
+                });
+            }
+            table.setFilter(filter);
+        })
+
+        $('#filterExcluded').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[1].push({ field: 'status', type: '!=', value: 1 });
+            }
+            else {
+                filter[1] = $.grep(filter[1], function (val) {
+                    return !(val.field == 'status' && val.type == '!=' && val.value == 1);
+                });
+            }
+            table.setFilter(filter);
+        })
+
+        $('#filterUnavailable').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[2].push({ field: 'isAvailable', type: '=', value: false });
+            }
+            else {
+                filter[2] = $.grep(filter[2], function (val) {
+                    return !(val.field == 'isAvailable' && val.type == '=' && val.value == false);
+                });
+            }
+            table.setFilter(filter);
+        })
+
+        $('#filterAvailable').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[2].push({ field: 'isAvailable', type: '=', value: true });
+            }
+            else {
+                filter[2] = $.grep(filter[2], function (val) {
+                    return !(val.field == 'isAvailable' && val.type == '=' && val.value == true);
+                });
+            }
+            table.setFilter(filter);
+        })
+
+        $('#filterUnavailable').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[2].push({ field: 'isAvailable', type: '=', value: false });
+            }
+            else {
+                filter[2] = $.grep(filter[2], function (val) {
+                    return !(val.field == 'isAvailable' && val.type == '=' && val.value == false);
+                });
+            }
+            table.setFilter(filter);
+        })
+
+        $('#downloadXLSModal').on('show.bs.modal', function () {
+            xlsIncludeExcluded = getCookie("XLSIncludeExcluded");
+            xlsIncludeUnavailable = getCookie("XLSIncludeUnavailable");
+            xlsIncludeUnverified = getCookie("XLSIncludeUnverified");
+
+            if (xlsIncludeUnavailable == 'true') {
+                $('#chkIncludeUnavailable').prop('checked', true);
+            }
+            else {
+                $('#chkIncludeUnavailable').removeAttr('checked');
+            }
+            if (xlsIncludeExcluded == 'true') {
+                $('#chkIncludeExcluded').prop('checked', true);
+            }
+            else {
+                $('#chkIncludeExcluded').removeAttr('checked');
+            }
+            if (xlsIncludeUnverified == 'true') {
+                $('#chkIncludeUnverified').prop('checked', true);
+            }
+            else {
+                $('#chkIncludeUnverified').removeAttr('checked');
+            }
+        })
+
+        $('#btnDownloadXLSGenerate').on('click', function () {
+            xlsIncludeExcluded = $('#chkIncludeExcluded').is(':checked');
+            xlsIncludeUnavailable = $('#chkIncludeUnavailable').is(':checked');
+            xlsIncludeUnverified = $('#chkIncludeUnverified').is(':checked');
+            setCookies();
+
+            $('#btnDownloadXLSGenerate').html("Формируется...");
+            $('#btnDownloadXLSGenerate').prop('disabled', true);
+
+            $.ajax({
+                type: "POST",
+                url: "/" + controllerName + "/generateXLS",
+                data: JSON.stringify({ includeExcluded: xlsIncludeExcluded, includeUnavailable: xlsIncludeUnavailable, includeUnverified: xlsIncludeUnverified}),
+                contentType: "application/json;charset=utf-8",
+                success: function (response) {
+                    $('#btnDownloadXLSGenerate').removeAttr('disabled');
+                    $('#btnDownloadXLSGenerate').html("Сформировать");
+                    $('#downloadXLSModal').modal('hide');
+                    window.location = controllerName +"/getXLS";
+                },
+                error: function (errormessage) {
+                    alert("Неизвестная ошибка " + errormessage);
+                    $('#btnDownloadXLSGenerate').removeAttr('disabled');
+                    $('#btnDownloadXLSGenerate').html("Сформировать");
+                    $('#downloadXLSModal').modal('hide');
+                }
+            });
+        })
+
+        function getCookie(cname) {
+            var name = cname + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
+
+        function setCookies() {
+            document.cookie = "XLSIncludeExcluded=" + xlsIncludeExcluded + "; expires=Fri, 31 Dec 9999 23:59:59 GMT";
+            document.cookie = "XLSIncludeUnavailable=" + xlsIncludeUnavailable + "; expires=Fri, 31 Dec 9999 23:59:59 GMT";
+            document.cookie = "XLSIncludeUnverified=" + xlsIncludeUnverified + "; expires=Fri, 31 Dec 9999 23:59:59 GMT";
         }
 
     </script>
