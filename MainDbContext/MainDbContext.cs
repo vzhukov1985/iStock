@@ -28,6 +28,7 @@ namespace DbCore
 
             //Pricelists
             modelBuilder.Entity<DynatoneOffer>(DynatoneConfigure);
+            modelBuilder.Entity<GrandmOffer>(GrandmConfigure);
         }
 
         protected void TelegramUsersConfigure(EntityTypeBuilder<TelegramUser> builder)
@@ -75,11 +76,6 @@ namespace DbCore
             builder.Property(p => p.LastPull)
                 .IsRequired(false)
                 .HasColumnType("timestamp");
-
-            builder.Property(p => p.ItemsToVerify)
-                .IsRequired()
-                .HasColumnType("int")
-                .HasDefaultValue(0);
 
             builder.Property(p => p.MinStockAvail)
                 .IsRequired()
@@ -249,7 +245,84 @@ namespace DbCore
             builder.Property(p => p.Vysota)
                 .HasColumnType("float(6,3)");
 
+            builder.Property(p => p.Izobrazhenie)
+                .HasColumnType("varchar(500)");
+
+            builder.Property(p => p.Opisanie)
+                .HasColumnType("text");
         }
+
+        protected void GrandmConfigure(EntityTypeBuilder<GrandmOffer> builder)
+        {
+            builder.ToTable("grandm");
+
+            builder.HasKey(p => p.Id)
+                   .HasName("PRIMARY");
+
+
+            builder.Property(p => p.Id)
+                .IsRequired()
+                .HasColumnType("char(36)");
+
+            builder.Property(p => p.Brand)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.CategoryName)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.CenaDiler)
+                .HasColumnType("int");
+
+            builder.Property(p => p.Kornevaya)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.Podkategoriya1)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.Podkategoriya2)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.Podkategoriya3)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.Podkategoriya4)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.IdTovara)
+                .HasColumnType("int");
+
+            builder.Property(p => p.NazvanieTovara)
+                .HasColumnType("varchar(500)");
+
+            builder.Property(p => p.URL)
+                .HasColumnType("varchar(500)");
+
+            builder.Property(p => p.KratkoeOpisanie)
+                .HasColumnType("varchar(1000)");
+
+            builder.Property(p => p.Izobrazheniya)
+                .HasColumnType("varchar(500)");
+
+            builder.Property(p => p.SvoistvoRazmer)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.SvoistvoCvet)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.Articul)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.CenaProdazhi)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.Ostatok)
+                .HasColumnType("int");
+
+            builder.Property(p => p.Ves)
+                .HasColumnType("varchar(255)");
+
+        }
+
 
         public virtual DbSet<TelegramUser> TelegramUsers { get; set; }
 
@@ -257,5 +330,6 @@ namespace DbCore
         public virtual DbSet<VectorOffer> VectorOffers { get; set; }
 
         public virtual DbSet<DynatoneOffer> Dynatone { get; set; }
+        public virtual DbSet<GrandmOffer> Grandm { get; set; }
     }
 }

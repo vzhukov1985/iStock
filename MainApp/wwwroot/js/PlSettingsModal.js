@@ -55,7 +55,7 @@ $('#btnSaveSettings').on('click', function () {
             CustomExchangeRate: $('#exchangeRateVal').val()
         }),
         success: function () {
-            updatePricelistHeader();
+            if (typeof updatePricelistHeader !== "undefined") { updatePricelistHeader(); }
             table.replaceData();
             $('#plSettingsModal').modal('hide');
         }

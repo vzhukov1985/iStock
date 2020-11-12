@@ -1,0 +1,97 @@
+﻿@{
+    Layout = "_PricelistMainLayout";
+    ViewData["Title"] = "Гранд мистерия";
+}
+
+@section SupplierItemView
+{
+    <img id="imgProduct" class="mt-3" style="max-height:30%;max-width:100%;display: block; margin-left: auto; margin-right: auto"><br />
+    <span><b>Корневая:</b></span>
+    <span id="Kornevaya"></span>
+    <br />
+    <span><b>Подкатегория 1:</b></span>
+    <span id="Podkategoriya1"></span>
+    <br />
+    <span><b>Подкатегория 2:</b></span>
+    <span id="Podkategoriya2"></span>
+    <br />
+    <span><b>Подкатегория 3:</b></span>
+    <span id="Podkategoriya3"></span>
+    <br />
+    <span><b>Подкатегория 4:</b></span>
+    <span id="Podkategoriya4"></span>
+    <br />
+    <span><b>ID товара:</b></span>
+    <span id="IdTovara"></span>
+    <br />
+    <span><b>Название товара:</b></span>
+    <span id="NazvanieTovara"></span>
+    <br />
+    <span><b>URL:</b></span>
+    <a id="URL">Перейти</a>
+    <br />
+    <span><b>Краткое описание:</b></span>
+    <span id="KratkoeOpisanie"></span>
+    <br />
+    <span><b>Изображения:</b></span>
+    <a id="Izobrazheniya">Перейти</a>
+    <br />
+    <span><b>Свойство - Размер:</b></span>
+    <span id="SvoistvoRazmer"></span>
+    <br />
+    <span><b>Свойство - Цвет:</b></span>
+    <span id="SvoistvoCvet"></span>
+    <br />
+    <span><b>Артикул:</b></span>
+    <span id="Articul"></span>
+    <br />
+    <span><b>Цена продажи:</b></span>
+    <span id="CenaProdazhi"></span>
+    <br />
+    <span><b>Остаток:</b></span>
+    <span id="Ostatok"></span>
+    <br />
+    <span><b>Вес:</b></span>
+    <span id="Ves"></span>
+    <br />
+}
+
+
+@section Scripts
+{
+    <script>
+        controllerName = 'grandm';
+    </script>
+}
+
+@section CodeGroupColumnSetupJS
+{
+    {
+    title: "Категория",
+    field: "groupCode",
+    width: 180,
+    formatter: groupCodeFormatter,
+    contextMenu: cmCodeGroupCell.concat(cmGeneral)
+    },
+}
+
+@section ShowSupplierItemDataJS
+{
+    $('#imgProduct').attr("src", response.izobrazheniya);
+    $('#Kornevaya').html(response.kornevaya);
+    $('#Podkategoriya1').html(response.podkategoriya1);
+    $('#Podkategoriya2').html(response.podkategoriya2);
+    $('#Podkategoriya3').html(response.podkategoriya3);
+    $('#Podkategoriya4').html(response.podkategoriya4);
+    $('#IdTovara').html(response.idTovara);
+    $('#NazvanieTovara').html(response.nazvanieTovara);
+    $('#URL').attr("href", response.url);
+    $('#KratkoeOpisanie').html(response.kratkoeOpisanie);
+    $('#Izobrazheniya').attr("href", response.izobrazheniya);
+    $('#SvoistvoRazmer').html(response.svoistvoRazmer);
+    $('#SvoistvoCvet').html(response.svoistvoCvet);
+    $('#Articul').html(response.articul);
+    $('#CenaProdazhi').html(response.cenaProdazhi);
+    $('#Ostatok').html(response.ostatok);
+    $('#Ves').html(response.ves);
+}

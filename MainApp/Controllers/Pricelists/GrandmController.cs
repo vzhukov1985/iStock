@@ -23,8 +23,8 @@ using NotVisualBasic.FileIO;
 
 namespace MainApp.Controllers.Pricelists
 {
-    [Route("dynatone")]
-    public class DynatoneController : Controller
+    [Route("grandm")]
+    public class GrandmController : Controller
     {
         private delegate double GenericPriceFormula(double supplierPrice, double exchangeRate);
 
@@ -38,23 +38,23 @@ namespace MainApp.Controllers.Pricelists
         private string currency;
         private GenericPriceFormula PriceFormula;
         private GenericPriceFormula PriceLimitFormula;
-        private DbSet<DynatoneOffer> supplierSet;
+        private DbSet<GrandmOffer> supplierSet;
         private string tmpCSVFilePath;
 
         private MainDbContext db;
         private HttpClient hc;
 
-        public DynatoneController(MainDbContext dbContext, HttpClient client, IWebHostEnvironment env)
+        public GrandmController(MainDbContext dbContext, HttpClient client, IWebHostEnvironment env)
         {
             db = dbContext;
             hc = client;
-            pricelistId = Guid.Parse("82f9dbe9-1519-430d-9f37-2fe2a6786900");
-            supplierName = "dynatone";
-            supplierSourceFileURL = "http://opt.dynatone.ru/opt/getfile.php?fn=Product&ft=CSVdescr&pr=all&i=6174&d=1514451600";
+            pricelistId = Guid.Parse("9a35d1cc-bff4-4b52-ab08-b06f0934d933");
+            supplierName = "grand_misteria";
+            supplierSourceFileURL = "https://grandm.ru/upload/grandm_ru_dealer_price.csv";
             currency = "RUB";
             PriceFormula = Formulas.StandardPriceFormula;
             PriceLimitFormula = Formulas.StandardPriceLimitFormula;
-            supplierSet = db.Dynatone;
+            supplierSet = db.Grandm;
             tmpCSVFilePath = $"{env.ContentRootPath}/{supplierName}.tmp";
         }
 
@@ -183,8 +183,8 @@ namespace MainApp.Controllers.Pricelists
             if (isPulling)
                 return Ok();
 
-            pullRecordsProcessed = 0;
             isPulling = true;
+            pullRecordsProcessed = 0;
 
             if (hc.DownloadFile(supplierSourceFileURL, tmpCSVFilePath) == false)
             {
@@ -193,12 +193,13 @@ namespace MainApp.Controllers.Pricelists
                 return StatusCode(404);
             }
 
-            using (CsvTextFieldParser reader = new CsvTextFieldParser(tmpCSVFilePath))
+            using (CsvTextFieldParser reader = new CsvTextFieldParser(tmpCSVFilePath, System.Text.Encoding.GetEncoding(1251)))
             {
                 reader.Delimiters = new string[] { ";" };
-                
                 reader.ReadFields(); //read header
+
                 string[] col;
+
                 while (!reader.EndOfData)
                 {
                     try
@@ -212,36 +213,34 @@ namespace MainApp.Controllers.Pricelists
 
                     int itemCode;
 
-                    if (!int.TryParse(col[0], out itemCode))
+                    if (!int.TryParse(col[5], out itemCode))
                         continue;
 
-                    var existingSupplierRecord = supplierSet.Where(i => i.Kod == itemCode).FirstOrDefault();
+                    var existingSupplierRecord = supplierSet.Where(i => i.IdTovara == itemCode).FirstOrDefault();
                     Guid newItemId = Guid.NewGuid();
 
-                    var supplierRecordToProcess = new DynatoneOffer
+                    var supplierRecordToProcess = new GrandmOffer
                     {
                         Id = newItemId,
-                        Kod = col[0].ParseNullableInt(),
-                        KodGruppy = col[1].ParseNullableInt(),
-                        Naimenovanie = col[2],
-                        RRC = col[3].ParseNullableInt(),
-                        CenaDiler = col[4].ParseNullableInt(),
-                        KolichestvoDlyaOpta = col[5].ParseNullableInt(),
-                        VidNomenklatury = col[6],
-                        Brand = col[7],
-                        ModelSModifikaciyey = col[8],
-                        Articul = col[9],
-                        Barcode = col[10],
-                        Model = col[11],
-                        Modifikaciya = col[12],
-                        KodSPrefixom = col[13],
-                        StranaProishojdenia = col[14],
-                        Ves = col[15].ParseNullableFloat(),
-                        Dlina = col[16].ParseNullableFloat(),
-                        Shirina = col[17].ParseNullableFloat(),
-                        Vysota = col[18].ParseNullableFloat(),
-                        Izobrazhenie = col[19],
-                        Opisanie = col[20]
+                        Brand = string.IsNullOrEmpty(col[4]) ? (string.IsNullOrEmpty(col[3]) ? (string.IsNullOrEmpty(col[2]) ? (string.IsNullOrEmpty(col[1]) ? col[0] : col[1]) : col[2]) : col[3]) : col[4],
+                        CategoryName = string.IsNullOrEmpty(col[4]) ? (string.IsNullOrEmpty(col[3]) ? (string.IsNullOrEmpty(col[2]) ? (string.IsNullOrEmpty(col[1]) ? "-" : col[0]) : col[1]) : col[2]) : col[3],
+                        CenaDiler = col[13].Substring(0, col[13].Length - 4).Replace(" ","").ParseNullableInt(),
+                        Kornevaya = col[0],
+                        Podkategoriya1 = col[1],
+                        Podkategoriya2 = col[2],
+                        Podkategoriya3 = col[3],
+                        Podkategoriya4 = col[4],
+                        IdTovara = col[5].ParseNullableInt(),
+                        NazvanieTovara = col[6],
+                        URL = col[7],
+                        KratkoeOpisanie = col[8],
+                        Izobrazheniya = col[9],
+                        SvoistvoRazmer = col[10],
+                        SvoistvoCvet = col[11],
+                        Articul = col[12],
+                        CenaProdazhi = col[13],
+                        Ostatok = col[14].ParseNullableInt(),
+                        Ves = col[15]
                     };
 
                     if (existingSupplierRecord == null)
@@ -305,7 +304,6 @@ namespace MainApp.Controllers.Pricelists
                                    allRecs.Count(i => i.Status == VectorOfferStatus.PriceAndDescriptionChanged));
 
                 isPulling = false;
-
                 return Ok();
             }
         }
@@ -364,19 +362,19 @@ namespace MainApp.Controllers.Pricelists
                 Id = v.Id,
                 IsVerified = v.IsVerified,
                 Status = v.Status,
-                GroupCode = d.KodGruppy,
-                Sku = v.Sku == null ? d.KodSPrefixom : v.Sku,
+                GroupCode = d.CategoryName,
+                Sku = v.Sku == null ? $"GM-{d.IdTovara}" : v.Sku,
                 isSkuCustom = v.Sku != null,
                 Brand = v.Brand == null ? d.Brand : v.Brand,
                 isBrandCustom = v.Brand != null,
-                Name = v.Name == null ? d.Naimenovanie : v.Name,
+                Name = v.Name == null ? d.NazvanieTovara : v.Name,
                 isNameCustom = v.Name != null,
                 Price = v.Price == null ? PriceFormula((double)d.CenaDiler, exchangeRate) : v.Price,
                 isPriceCustom = v.Price != null,
                 PriceLimit = v.PriceLimit == null ? PriceLimitFormula((double)d.CenaDiler, exchangeRate) : v.PriceLimit,
                 isPriceLimitCustom = v.PriceLimit != null,
-                isAvailable = d.KolichestvoDlyaOpta >= pl.MinStockAvail
-            }).OrderByDescending(i => i.isAvailable).ToList();
+                isAvailable = d.Ostatok >= pl.MinStockAvail
+            }).OrderByDescending(i => i.isAvailable);
             return Ok(res);
         }
 
@@ -447,14 +445,14 @@ namespace MainApp.Controllers.Pricelists
         [HttpPost]
         public IActionResult SetGroupStatus([FromBody] dynamic qparams)
         {
-            var groupCode = (int)qparams["groupCode"];
+            var groupCode = (string)qparams["groupCode"];
             var allRecIds = db.VectorOffers.Join(supplierSet, v => v.Id, d => d.Id, (v, d) =>
             new
             {
                 id = v.Id,
                 v.PricelistId,
-                groupCode = d.KodGruppy,
-            }).Where(i => i.PricelistId == pricelistId && i.groupCode == groupCode).Select(i => i.id).ToList();
+                groupCode = d.CategoryName,
+            }).Where(i => i.PricelistId == pricelistId && i.groupCode.Equals(groupCode)).Select(i => i.id).ToList();
 
             foreach (var recId in allRecIds)
             {
@@ -502,11 +500,11 @@ namespace MainApp.Controllers.Pricelists
             switch (field)
             {
                 case "sku":
-                    return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => i.KodSPrefixom).FirstOrDefault());
+                    return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => $"GM-{i.IdTovara}").FirstOrDefault());
                 case "brand":
                     return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => i.Brand).FirstOrDefault());
                 case "name":
-                    return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => i.Naimenovanie).FirstOrDefault());
+                    return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => i.NazvanieTovara).FirstOrDefault());
                 case "price":
                     return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => PriceFormula((double)i.CenaDiler, exchangeRate)).FirstOrDefault());
                 case "priceLimit":
@@ -559,12 +557,12 @@ namespace MainApp.Controllers.Pricelists
                 {
                     IsVerified = v.IsVerified,
                     Status = v.Status,
-                    Sku = v.Sku == null ? d.KodSPrefixom : v.Sku,
+                    Sku = v.Sku == null ? $"GM-{d.IdTovara}" : v.Sku,
                     Brand = v.Brand == null ? d.Brand : v.Brand,
-                    Name = v.Name == null ? d.Naimenovanie : v.Name,
+                    Name = v.Name == null ? d.NazvanieTovara : v.Name,
                     Price = v.Price == null ? PriceFormula((double)d.CenaDiler, exchangeRate) : v.Price,
                     PriceLimit = v.PriceLimit == null ? PriceLimitFormula((double)d.CenaDiler, exchangeRate) : v.PriceLimit,
-                    isAvailable = d.KolichestvoDlyaOpta >= pl.MinStockAvail
+                    isAvailable = d.Ostatok >= pl.MinStockAvail
                 });
 
                 foreach (var rec in allRecs)

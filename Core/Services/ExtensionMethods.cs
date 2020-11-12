@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -70,6 +72,8 @@ namespace Core.Services
 
     public static class HttpClientExtensionMethods
     {
+        private static WebClient wc = new WebClient();
+
         public static async Task<double?> GetExchangeRate(this HttpClient client, string currency)
         {
             string allRatesData;
@@ -104,6 +108,40 @@ namespace Core.Services
         {
             var dataAsString = await content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<T>(dataAsString);
+        }
+
+        public static bool DownloadFile(this HttpClient client, string uri, string filePath)
+        {
+            try
+            {
+                wc.DownloadFile(uri, filePath);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+          /*  try
+            {
+                var response = await client.GetAsync(uri);
+                if (response.IsSuccessStatusCode)
+                {
+                    using (var fs = new FileStream(filePath, FileMode.Create))
+                    {
+                        await response.Content.CopyToAsync(fs);
+                        return true;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }*/
         }
     }
 }

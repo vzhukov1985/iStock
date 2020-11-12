@@ -3,14 +3,16 @@ using System;
 using DbCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DbCore.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    partial class MainDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201110161822_Grandm")]
+    partial class Grandm
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,6 +36,11 @@ namespace DbCore.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(false);
+
+                    b.Property<int>("ItemsToVerify")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<DateTime?>("LastPull")
                         .HasColumnType("timestamp");
@@ -175,9 +182,6 @@ namespace DbCore.Migrations
                     b.Property<float?>("Dlina")
                         .HasColumnType("float(6,3)");
 
-                    b.Property<string>("Izobrazhenie")
-                        .HasColumnType("varchar(500)");
-
                     b.Property<int?>("Kod")
                         .HasColumnType("int");
 
@@ -201,9 +205,6 @@ namespace DbCore.Migrations
 
                     b.Property<string>("Naimenovanie")
                         .HasColumnType("varchar(1000)");
-
-                    b.Property<string>("Opisanie")
-                        .HasColumnType("text");
 
                     b.Property<int?>("RRC")
                         .HasColumnType("int");

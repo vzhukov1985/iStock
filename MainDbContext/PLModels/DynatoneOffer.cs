@@ -26,6 +26,8 @@ namespace DbCore.PLModels
         public float? Dlina { get; set; }
         public float? Shirina { get; set; }
         public float? Vysota { get; set; }
+        public string Izobrazhenie { get; set; }
+        public string Opisanie { get; set; }
 
         public bool IsDescriptionChanged(DynatoneOffer oldOffer)
         {
@@ -70,6 +72,8 @@ namespace DbCore.PLModels
             Dlina = offer.Dlina;
             Shirina = offer.Shirina;
             Vysota = offer.Vysota;
+            Izobrazhenie = offer.Izobrazhenie;
+            Opisanie = offer.Opisanie;
         }
     }
 }

@@ -8,6 +8,10 @@
   <ItemGroup>
     <Compile Remove="Migrations\20201110101547_TelegramUsers.cs" />
     <Compile Remove="Migrations\20201110101547_TelegramUsers.Designer.cs" />
+    <Compile Remove="Migrations\20201110152036_Grandm.cs" />
+    <Compile Remove="Migrations\20201110152036_Grandm.Designer.cs" />
+    <Compile Remove="Migrations\20201111085800_DynatoneAddedPics.cs" />
+    <Compile Remove="Migrations\20201111085800_DynatoneAddedPics.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

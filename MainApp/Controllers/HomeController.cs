@@ -29,93 +29,48 @@ namespace MainApp.Controllers
                 p.Id,
                 p.Name,
                 p.SupplierName,
-                lastPull = p.LastPull == null ? null : ((DateTime)p.LastPull).ToString("G"),
-                p.ItemsToVerify,
-                p.Controller
+                lastPull = "",
+                itemsToVerify = 0,
+                p.Controller,
+                isPulling = false
             });
 
             return Ok(pricelists);
         }
 
-        [HttpGet("pricelists/getlastpull/{id}")]
-        public IActionResult GetLastPull(string id)
-        {
-            Guid plId;
-            if (Guid.TryParse(id, out plId))
-            {
-                return Ok(db.Pricelists.Where(p => p.Id == plId).Select(p => p.LastPull == null ? null: ((DateTime)p.LastPull).ToString("G")).FirstOrDefault());
-            }
-            return StatusCode(400);
-        }
-
-        [HttpGet("pricelists/getItemsToVerify/{id}")]
-        public IActionResult GetItemsToVerifyCount(string id)
-        {
-            Guid plId;
-            if (Guid.TryParse(id, out plId))
-            {
-                return Ok(db.Pricelists.Where(p => p.Id == plId).Select(p => p.ItemsToVerify).FirstOrDefault());
-            }
-            return StatusCode(400);
-        }
-
-
-        [HttpGet("pricelists/plsettings/{id}")]
-        public IActionResult GetPricelistSettings(string id)
-        {
-            Guid plId;
-            if (Guid.TryParse(id, out plId))
-            {
-                var res = db.Pricelists.Where(p => p.Id == plId).Select(p => new
-                {
-                    p.Name,
-                    p.SupplierName,
-                    p.PreorderInDays,
-                    p.MinStockAvail,
-                    p.IsFavorite
-                }).FirstOrDefault();
-
-                if (res != null)
-                    return Ok(res);
-            }
-            return StatusCode(400);
-        }
-
-        [HttpPost("pricelists/plsettings/{id}")]
-        public IActionResult SetPricelistSettings([FromRoute] string id, [FromBody] PLSettings a)
-        {
-            Guid plId;
-            if (Guid.TryParse(id, out plId))
-            {
-                var pl = db.Pricelists.Where(p => p.Id == plId).FirstOrDefault();
-                if (pl != null)
-                {
-                    pl.SupplierName = a.SupplierName;
-                    pl.Name = a.Name;
-                    pl.PreorderInDays = a.PreorderInDays;
-                    pl.MinStockAvail = a.MinStockAvail;
-                    pl.IsFavorite = a.IsFavorite;
-                    db.SaveChanges();
-                    return Ok();
-                }
-            }
-            return StatusCode(400);
-        }
-        public class PLSettings
-        {
-            public string SupplierName { get; set; }
-            public string Name { get; set; }
-            public int PreorderInDays { get; set; }
-            public int MinStockAvail { get; set; }
-            public bool IsFavorite { get; set; }
-        }
-
-
-
         public IActionResult Index()
         {
             return View();
         }
+
+        [Route("findBySku/{id}")]
+        [HttpGet]
+        public IActionResult FindBySku([FromRoute] string id)
+        {
+            Guid plId = db.VectorOffers
+                                .Join(db.Dynatone,
+                                      v => v.Id,
+                                      d => d.Id,
+                                      (v, d) => new { v.Id, Sku = v.Sku == null ? d.KodSPrefixom : v.Sku, v.PricelistId }).Where(j => j.Sku == id).Select(j => j.PricelistId).FirstOrDefault();
+
+            if (plId != Guid.Empty)
+            {
+                return Ok(db.Pricelists.Where(p => p.Id == plId).Select(p => p.Controller).FirstOrDefault());
+            }
+
+            plId = db.VectorOffers.Join(db.Grandm,
+                                        v => v.Id,
+                                        g => g.Id,
+                                        (v, g) => new { v.Id, Sku = v.Sku == null ? $"GM-{g.IdTovara}" : v.Sku, v.PricelistId }).ToList().Where(i => i.Sku == id).Select(j => j.PricelistId).FirstOrDefault();
+
+            if (plId != Guid.Empty)
+            {
+                return Ok(db.Pricelists.Where(p => p.Id == plId).Select(p => p.Controller).FirstOrDefault());
+            }
+
+            return Ok(null);
+        }
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

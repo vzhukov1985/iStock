@@ -10,7 +10,6 @@ namespace DbCore.Models
         public string SupplierName { get; set; }
         public string Name { get; set; }
         public DateTime? LastPull { get; set; }
-        public int ItemsToVerify { get; set; }
         
         public int PreorderInDays { get; set; }
         public int MinStockAvail { get; set; }

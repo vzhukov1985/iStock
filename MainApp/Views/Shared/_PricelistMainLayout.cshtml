@@ -13,6 +13,124 @@
     </header>
     <main role="main" style="height:100%;">
         <div class="container-fluid px-5" style="height:100%">
+            <div class="row mt-2 justify-content-between" style="height:9.7%">
+                <div class="col-10">
+                    <h3 class=" mb-0" style="color:#1b6ec2; line-height:150%">
+                        <span id="supplierName"></span>&#160
+                        <span class="h6 mt-0" style="color:#91C3F5" id="plName">Общий</span>
+                    </h3>
+                    <p style="font-size:x-small; line-height: 110%;">
+                        Последняя загрузка: <span id="lastUpdate">Нет</span><br />
+                        Непросмотренных позиций: <span id="itemsToVerify">0</span>
+                    </p>
+                </div>
+                <div class="col-2">
+                    <a href="/" style="color:inherit" onmouseover="this.style.textDecoration='none'">
+                        <h1 class="display-4 mb-0" style="line-height: 90%;">iStock</h1>
+                        <p style="font-size:x-small; line-height: 100%; margin-top: 0px;">Система парсинга прайс-листов</p>
+                    </a>
+                </div>
+            </div>
+
+            <div class="row mt-1 pr-0 d-inline-flex w-100">
+                <div class="col-6">
+                    <button type="button" id="btnPull" class="btn btn-success mr-1 btn-sm">Загрузить</button>
+                    <button type="button" id="btnPush" class="btn btn-success mr-1 btn-sm" disabled>Выгрузить</button>
+                    <button type="button" id="btnDownload" class="btn btn-success mr-1 btn-sm" data-toggle="modal" data-target="#downloadXLSModal">Скачать XLS</button>
+                    <button type="button" id="btnSettings" class="btn btn-warning mr-1 btn-sm" data-toggle="modal" data-target="#plSettingsModal">Настройки</button>
+                </div>
+
+                <div class="col-4 d-inline-flex justify-content-end">
+                    <button class="btn btn-primary mr-3 btn-sm dropdown-toggle" type="button" id="btnFilter" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Фильтр</button>
+                    <div class="dropdown-menu" aria-labelledby="btnFilter">
+
+                        <ul class="pl-filter-menu" style="list-style:none; padding:0px 10px; margin-bottom:0">
+                            <li>
+                                <label>
+                                    <input id="filterAll" type="checkbox" checked> Все
+                                </label>
+                            </li>
+                            <li class="dropdown-divider">
+                            </li>
+                            <li>
+                                <label>
+                                    <input id="filterVerified" type="checkbox" checked> Просмотренные
+                                </label>
+                            </li>
+                            <li>
+                                <label>
+                                    <input id="filterUnverified" type="checkbox" checked> Непросмотренные
+                                </label>
+                            </li>
+                            <li class="dropdown-divider">
+                            </li>
+                            <li>
+                                <label>
+                                    <input id="filterIncluded" type="checkbox" checked> Включенные в базу
+                                </label>
+                            </li>
+                            <li>
+                                <label>
+                                    <input id="filterExcluded" type="checkbox" checked> Исключенные из базы
+                                </label>
+                            </li>
+                            <li class="dropdown-divider">
+                            </li>
+                            <li>
+                                <label>
+                                    <input id="filterAvailable" type="checkbox" checked> Есть в наличии
+                                </label>
+                            </li>
+                            <li>
+                                <label>
+                                    <input id="filterUnavailable" type="checkbox" checked> Нет в наличии
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+                    <input type="text" class="form-control form-control-sm mr-1 w-50" id="inpSearchText" placeholder="Поиск..." value="@ViewData["SearchSku"]">
+                    <button type="button" id="btnClearSearch" class="btn btn-primary btn-sm mr-0">Очистить</button>
+                </div>
+
+                <div class="col-2 mt-1">
+                    <b style="color:#1b6ec2">Данные поставщика:</b>
+                </div>
+            </div>
+
+            <div class="row mt-1 d-inline-flex w-100" style="max-height:80%">
+                <div class="col-10">
+                    <div id="table"></div>
+                </div>
+
+                <div class="col-2" style="height:80vh; border: 1px solid #666666; border-radius: 5px; font-size:small; overflow:scroll">
+                    @RenderSection("SupplierItemView", required: false)
+                </div>
+            </div>
+
+            <!--Modal Dialogs-->
+            <div class="modal fade" id="pullModal" tabindex="-1" role="dialog" aria-labelledby="pullModalTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="pullModalTitle">Загрузка прайс-листа поставщика</h5>
+                            <button id="btnPullCloseHeader" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            <p id="pullStatus">Соединение...</p>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button id="btnPullClose" type="button" class="btn btn-primary" data-dismiss="modal">Закрыть</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @await Html.PartialAsync("_PlDownloadXLSModal")
+            @await Html.PartialAsync("_PlSettingsModal")
             @RenderBody()
         </div>
     </main>
@@ -29,7 +147,738 @@
 
     <script type="text/javascript" src="~/lib/tabulator/dist/js/tabulator.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/js/PlSettingsModal.js" asp-append-version="true"></script>
+    <script src="~/js/plSettingsModal.js" asp-append-version="true"></script>
+    <script src="~/js/plDownloadXLSModal.js" asp-append-version="true"></script>
+
     @RenderSection("Scripts", required: false)
+
+    <script>
+        var updatePullStatusTimer;
+        var cellCustomColor = "#EAF746";
+        var controllerName;
+        var filter = [[{ field: '', type: '', value: '' }]];
+        var xlsIncludeUnavailable;
+        var xlsIncludeExcluded;
+        var xlsIncludeUnverified;
+
+        var cmIsVerifiedHeader = [
+            {
+                label: "Пометить все как просмотренные",
+                action: function (e, column) {
+                    setAllIsVerified(true);
+                }
+            },
+            {
+                label: "Пометить все как непросмотренные",
+                action: function (e, column) {
+                    setAllIsVerified(false);
+                }
+            }
+        ];
+
+        var cmStatusHeader = [
+            {
+                label: "Включить все",
+                action: function (e, column) {
+                    setAllStatus(1);
+                }
+            },
+            {
+                label: "Исключить все",
+                action: function (e, column) {
+                    setAllStatus(0);
+                }
+            }
+        ];
+
+        var cmCodeGroupCell = [
+            {
+                label: "Включить товары группы",
+                action: function (e, cell) {
+                    setGroupStatus(cell.getData().groupCode, 1);
+                }
+            },
+            {
+                label: "Исключить товары группы",
+                action: function (e, cell) {
+                    setGroupStatus(cell.getData().groupCode, 0);
+                }
+            }
+        ];
+
+        var cmDataCell = [
+            {
+                label: "Значение от поставщика",
+                action: function (e, cell) {
+                    setCellDefaultValue(cell);
+                }
+            },
+            {
+                label: "Зафиксировать значение",
+                action: function (e, cell) {
+                    cellEdited(cell);
+                }
+            }
+        ];
+
+        var cmGeneral = [
+            {
+                separator: true
+            },
+            {
+                label: "Отметить выделенные как просмотренные",
+                action: function (e, cell) {
+                    var data = table.getSelectedData();
+                    data.forEach(function (value, index, array) {
+                        setIsVerifiedById(value.id, true);
+                    })
+                },
+                disabled: function () {
+                    return table.getSelectedRows().length == 0;
+                }
+            },
+            {
+                label: "Отметить выделенные как непросмотренные",
+                action: function (e, cell) {
+                    var data = table.getSelectedData();
+                    data.forEach(function (value, index, array) {
+                        setIsVerifiedById(value.id, false);
+                    })
+                },
+                disabled: function () {
+                    return table.getSelectedRows().length == 0;
+                }
+            },
+            {
+                label: "Включить выделенные товары",
+                action: function (e, cell) {
+                    var data = table.getSelectedData();
+                    data.forEach(function (value, index, array) {
+                        setStatusById(value.id, 1);
+                    })
+                },
+                disabled: function () {
+                    return table.getSelectedRows().length == 0;
+                }
+            },
+            {
+                label: "Исключить выделенные товары",
+                action: function (e, cell) {
+                    var data = table.getSelectedData();
+                    data.forEach(function (value, index, array) {
+                        setStatusById(value.id, 0);
+                    })
+                },
+                disabled: function () {
+                    return table.getSelectedRows().length == 0;
+                }
+            }
+
+        ];
+
+        var table = new Tabulator("#table", {
+            height: "80vh",
+            ajaxURL: "/" + controllerName + "/getbriefdata",
+            headerSortElement: "&#9650;",
+            selectable: true,
+            selectableRangeMode: "click",
+            resizableColumns: "header",
+            layout: "fitColumns",
+            tooltips: cellToolTip,
+            cellEdited: cellEdited,
+            cellEditCancelled: cellEditCancelled,
+            rowClick: showSupplierItemData,
+            columns: [
+                {
+                    title: "",
+                    field: "isVerified",
+                    width: 60,
+                    hozAlign: "center",
+                    resizable: false,
+                    formatter: isVerifiedFormatter,
+                    cellClick: isVerifiedCellClick,
+                    headerMenu: cmIsVerifiedHeader,
+                    contextMenu: cmGeneral
+                },
+                {
+                    title: "",
+                    field: "status",
+                    width: 60,
+                    hozAlign: "center",
+                    resizable: false,
+                    formatter: statusFormatter,
+                    cellClick: statusCellClick,
+                    headerMenu: cmStatusHeader,
+                    contextMenu: cmGeneral
+                },
+                @RenderSection("CodeGroupColumnSetupJS", required: false)
+                {
+                    title: "SKU",
+                    field: "sku",
+                    width: 100,
+                    editor: "input",
+                    editable: false,
+                    formatter: dataFormatter,
+                    cellDblClick: editableCellDblClick,
+                    contextMenu: cmDataCell.concat(cmGeneral)
+                },
+                {
+                    title: "Бренд",
+                    field: "brand",
+                    width: 100,
+                    editor: "input",
+                    editable: false,
+                    formatter: dataFormatter,
+                    cellDblClick: editableCellDblClick,
+                    contextMenu: cmDataCell.concat(cmGeneral)
+                },
+                {
+                    title: "Наименование",
+                    field: "name",
+                    editor: "input",
+                    editable: false,
+                    formatter: dataFormatter,
+                    cellDblClick: editableCellDblClick,
+                    contextMenu: cmDataCell.concat(cmGeneral)
+                },
+                {
+                    title: "Цена (тг)",
+                    field: "price",
+                    minWidth: 100,
+                    widthGrow: 0.2,
+                    editor: "number",
+                    editable: false,
+                    formatter: dataFormatter,
+                    cellDblClick: editableCellDblClick,
+                    contextMenu: cmDataCell.concat(cmGeneral)
+                },
+                {
+                    title: "Лимит цены (тг)",
+                    field: "priceLimit",
+                    minWidth: 155,
+                    widthGrow: 0.4,
+                    editor: "number",
+                    editable: false,
+                    formatter: dataFormatter,
+                    cellDblClick: editableCellDblClick,
+                    contextMenu: cmDataCell.concat(cmGeneral)
+                }
+            ]
+        });
+
+        //*** OnLoadCode
+
+        updatePricelistHeader();
+        updateLastPull();
+        updateItemsToVerify();
+        setFilterAll();
+        updateTextSearchFilter();
+
+        //***
+        function updatePricelistHeader() {
+            $.ajax({
+                type: 'GET',
+                url: "/" + controllerName + "/getPricelistHeader",
+                success: function (response) {
+                    $('#supplierName').html(response.supplierName);
+                    $('#plName').html(response.name);
+                }
+            })
+        }
+
+        function isVerifiedFormatter(cell, formatterParams, onRendered) {
+            if (cell.getValue() == 0) {
+                cell.getElement().style.color = "red";
+                cell.getElement().style.backgroundColor = "#FFB6C1";
+                return "&#9888;";
+            }
+            else {
+                cell.getElement().style.color = "green";
+                cell.getElement().style.backgroundColor = "transparent";
+                return "&#10004;";
+            }
+        }
+
+        function statusFormatter(cell, formatterParams, onRendered) {
+            switch (cell.getValue()) {
+                case 0:
+                    cell.getElement().style.color = "red";
+                    return "&#10060;";
+                    break;
+                case 1:
+                    cell.getElement().style.color = "green";
+                    return "&#10004;";
+                    break;
+                case 2:
+                    cell.getElement().style.color = "#A8B415";
+                    return "&#9888;";
+                    break;
+                case 3:
+                    cell.getElement().style.color = "red";
+                    return "&#128276;";
+                    break;
+                case 4:
+                    cell.getElement().style.color = "red";
+                    return "&#128293;";
+                    break;
+            }
+        }
+
+        function groupCodeFormatter(cell, formatterParams, onRendered) {
+            setTextColorByIsAvailable(cell);
+            return cell.getValue();
+        }
+
+        function dataFormatter(cell, formatterParams, onRendered) {
+            var field = cell.getField();
+            var value = cell.getValue();
+            var capitalizedField = field.charAt(0).toUpperCase() + field.substring(1);
+
+            setTextColorByIsAvailable(cell);
+
+            if (cell.getData()['is' + capitalizedField + 'Custom'] == true) {
+                cell.getElement().style.backgroundColor = cellCustomColor;
+            }
+            else {
+                cell.getElement().style.backgroundColor = "transparent";
+
+            }
+            if ((capitalizedField == "Price" || capitalizedField == "PriceLimit") && (value != null)) {
+                var strVal = String(value.toFixed(2));
+                if (strVal.substr(strVal.length - 3) == ".00") {
+                    return Number(value).toLocaleString('ru');
+                }
+                else {
+                    return Number(value).toFixed(2).toLocaleString('ru');
+                }
+
+            }
+            else {
+                return value;
+            }
+        }
+
+        function setTextColorByIsAvailable(cell) {
+            if (cell.getData().isAvailable == true) {
+                cell.getElement().style.color = "black";
+            }
+            else {
+                cell.getElement().style.color = "darkgray";
+            }
+        }
+
+        function cellToolTip(cell) {
+            if (cell.getField() == 'status') {
+                switch (cell.getData().status) {
+                    case 0:
+                        return "Товар НЕ включен в базу";
+                    case 1:
+                        return "Товар включен в базу";
+                    case 2:
+                        return "Изменилось описание товара у поставщика";
+                    case 3:
+                        return "Изменилась цена у поставщика";
+                    case 4:
+                        return "Изменились и цена, и описание у поставщика";
+                }
+            }
+            return false;
+        }
+
+        function isVerifiedCellClick(e, cell) {
+            var rowData = cell.getData();
+            setIsVerifiedById(rowData.id, !rowData.isVerified);
+        }
+
+        function statusCellClick(e, cell) {
+            var rowData = cell.getData();
+            if (rowData.status == 1) {
+                setStatusById(rowData.id, 0)
+            }
+            else {
+                setStatusById(rowData.id, 1)
+            }
+        }
+
+        function editableCellDblClick(e, cell) {
+            cell.edit(true);
+        }
+
+        function cellEditCancelled(cell) {
+            isCellEditCancelled = true;
+        }
+
+        function cellEdited(cell) {
+            var rowData = cell.getData();
+            $.ajax({
+                type: 'POST',
+                url: "/" + controllerName + "/setCustomValue/" + rowData.id,
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify({ field: cell.getField(), value: cell.getValue() }),
+                success: function () {
+                    var field = cell.getField();
+                    var capField = field.charAt(0).toUpperCase() + field.substring(1);
+                    var data = [{
+                        'id': cell.getData().id,
+                    }]
+                    data[0]['is' + capField + 'Custom'] = true;
+                    table.updateData(data);
+                    cell.getElement().style.backgroundColor = cellCustomColor;
+                }
+            });
+        }
+
+        function setIsVerifiedById(id, value) {
+            $.ajax({
+                type: 'POST',
+                url: "/" + controllerName + "/setIsVerified/" + id,
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify(value),
+                success: function () {
+                    table.updateData([{ id: id, isVerified: value }]);
+                    updateItemsToVerify();
+                }
+            })
+
+        }
+
+        function setStatusById(id, value) {
+            $.ajax({
+                type: 'POST',
+                url: "/" + controllerName + "/setStatus/" + id,
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify(value),
+                success: function () { table.updateData([{ id: id, status: value }]); }
+            })
+
+        }
+
+        function setAllIsVerified(vvalue) {
+            if (confirm('ВНИМАНИЕ!!! Изменение коснется всех записей таблицы. Вы уверены, что хотите продолжить?')) {
+                $.ajax({
+                    type: 'POST',
+                    url: "/" + controllerName + "/setAllIsVerified",
+                    contentType: "application/json;charset=utf-8",
+                    data: JSON.stringify(vvalue),
+                    success: function () {
+                        table.getData().forEach(function (value, index, array) {
+                            table.updateData([{ id: value.id, isVerified: vvalue }]);
+                        })
+                        updateItemsToVerify();
+                    }
+                });
+            }
+        }
+
+        function setAllStatus(svalue) {
+            if (confirm('ВНИМАНИЕ!!! Изменение коснется всех записей таблицы. Вы уверены, что хотите продолжить?')) {
+                $.ajax({
+                    type: 'POST',
+                    url: "/" + controllerName + "/setAllStatus",
+                    contentType: "application/json;charset=utf-8",
+                    data: JSON.stringify(svalue),
+                    success: function () {
+                        table.getData().forEach(function (value, index, array) {
+                            table.updateData([{ id: value.id, status: svalue }]);
+                        })
+                    }
+                });
+            }
+        }
+
+        function setGroupStatus(groupCode, svalue) {
+            $.ajax({
+                type: 'POST',
+                url: "/" + controllerName + "/setGroupStatus",
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify({ groupCode: groupCode, value: svalue }),
+                success: function () {
+                    table.getData().forEach(function (value, index, array) {
+                        if (value.groupCode == groupCode) {
+                            table.updateData([{ id: value.id, status: svalue }]);
+                        }
+                    })
+                }
+            });
+        }
+
+        function setCellDefaultValue(cell) {
+            $.ajax({
+                type: 'POST',
+                url: "/" + controllerName + "/setDefaultValue/" + cell.getData().id,
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify(cell.getField()),
+                success: function (response) {
+                    var field = cell.getField();
+                    var capField = field.charAt(0).toUpperCase() + field.substring(1);
+                    var data = [{
+                        'id': cell.getData().id,
+                    }]
+                    data[0]['is' + capField + 'Custom'] = false;
+                    data[0][field] = response;
+                    table.updateData(data);
+                    cell.getElement().style.backgroundColor = "transparent";
+                }
+            });
+        }
+
+
+        $('#btnPull').on('click', function () {
+            $('#btnPullClose').prop('disabled', true);
+            $('#btnPullCloseHeader').prop('disabled', true);
+            $('#pullStatus').html('Соединение...');
+            $('#pullModal').modal('show');
+            $.ajax({
+                type: 'GET',
+                url: "/" + controllerName + "/pull/ispulling",
+                success: function (response) {
+                    if (response == false) {
+                        $('#pullStatus').html('Загрузка...');
+                        startPull();
+                    }
+                    updatePullStatusTimer = setInterval(updatePullStatus, 200);
+                },
+                error: function () {
+                    $('#pullStatus').html('Невозможно с соединиться с сервером поставщика');
+                    $('#btnPullClose').removeAttr('disabled');
+                    $('#btnPullCloseHeader').removeAttr('disabled');
+                }
+            })
+        })
+
+
+
+        function startPull() {
+            $.ajax({
+                type: 'GET',
+                url: "/" + controllerName + "/pull",
+                async: true,
+                success: function (response) {
+                    clearInterval(updatePullStatusTimer);
+                    $('#pullStatus').html('Загрузка завершена.');
+                    $('#btnPullClose').removeAttr('disabled');
+                    $('#btnPullCloseHeader').removeAttr('disabled');
+                    updateLastPull();
+                    updateItemsToVerify();
+                    table.replaceData();
+                },
+                error: function () {
+                    $('#pullStatus').html('Невозможно с соединиться с сервером поставщика');
+                }
+            })
+        }
+
+        function updatePullStatus() {
+            $.ajax({
+                type: 'GET',
+                url: "/" + controllerName + "/pull/pullrecsprocessed",
+                success: function (response) {
+                    if (response == 0) {
+                        $('#pullStatus').html('Скачивание...');
+                    }
+                    else if (response == -1) {
+                        $('#pullStatus').html('Обработка изменений...');
+                    }
+                    else {
+                        $('#pullStatus').html('Загрузка... загружено ' + response + ' записей.');
+                    }
+                }
+            })
+        }
+
+        function updateLastPull() {
+            $.ajax({
+                type: 'GET',
+                url: "/" + controllerName + "/getLastPull",
+                success: function (response) {
+                    $('#lastUpdate').html(response);
+                }
+            })
+        }
+
+        function updateItemsToVerify() {
+            $.ajax({
+                type: 'GET',
+                url: "/" + controllerName + "/getItemsToVerifyCount",
+                success: function (response) {
+                    if (response != 0) {
+                        $('#itemsToVerify').css('color', 'red');
+                    }
+                    else {
+                        $('#itemsToVerify').css('color', 'black');
+                    }
+                    $('#itemsToVerify').html(response);
+                }
+            })
+        }
+
+        function showSupplierItemData(e, row) {
+            $.ajax({
+                type: 'GET',
+                url: "/" + controllerName + "/getSupplierItemData/" + row.getData().id,
+                success: function (response) {
+                    @RenderSection("ShowSupplierItemDataJS", required: false)
+                }
+            })
+        }
+
+        $('#btnClearSearch').on('click', function () {
+            $('#inpSearchText').val('');
+            filter[3] = [];
+            table.setFilter(filter);
+        })
+
+        $('#inpSearchText').on('keyup', function () {
+            setFilterAll();
+            updateTextSearchFilter();
+        })
+
+        function updateTextSearchFilter() {
+            var searchText = $('#inpSearchText').val();
+            filter[3] =
+                [
+                    { field: "sku", type: "like", value: searchText },
+                    { field: "brand", type: "like", value: searchText },
+                    { field: "name", type: "like", value: searchText },
+                ];
+            table.setFilter(filter);
+        }
+
+        function setFilterAll() {
+            filter[0] =
+                [
+                    { field: 'sku', type: '=', value: "qwekjsldkfjklsdfj" },
+                    { field: 'isVerified', type: '=', value: true },
+                    { field: 'isVerified', type: '=', value: false },
+                ];
+            filter[1] = [
+                { field: 'sku', type: '=', value: "qwekjsldkfjklsdfj" },
+                { field: 'status', type: '=', value: 1 },
+                { field: 'status', type: '!=', value: 1 },
+            ];
+            filter[2] = [
+                { field: 'sku', type: '=', value: "qwekjsldkfjklsdfj" },
+                { field: 'isAvailable', type: '=', value: true },
+                { field: 'isAvailable', type: '=', value: false },
+            ];
+            table.clearFilter();
+            table.setFilter(filter);
+            $('#filterAll').prop('checked', true);
+            $('#filterVerified').prop('checked', true);
+            $('#filterUnverified').prop('checked', true);
+            $('#filterIncluded').prop('checked', true);
+            $('#filterExcluded').prop('checked', true);
+            $('#filterAvailable').prop('checked', true);
+            $('#filterUnavailable').prop('checked', true);
+        }
+
+        $('#filterAll').change(function () {
+            setFilterAll();
+        })
+
+        $('#filterVerified').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[0].push({ field: 'isVerified', type: '=', value: true });
+            }
+            else {
+                filter[0] = $.grep(filter[0], function (val) {
+                    return !(val.field == 'isVerified' && val.type == '=' && val.value == true);
+                });
+            }
+            table.setFilter(filter);
+        })
+
+        $('#filterUnverified').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[0].push({ field: 'isVerified', type: '=', value: false });
+            }
+            else {
+                filter[0] = $.grep(filter[0], function (val) {
+                    return !(val.field == 'isVerified' && val.type == '=' && val.value == false);
+                });
+            }
+            table.setFilter(filter);
+        })
+
+        $('#filterAvailable').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[2].push({ field: 'isAvailable', type: '=', value: true });
+            }
+            else {
+                filter[2] = $.grep(filter[2], function (val) {
+                    return !(val.field == 'isAvailable' && val.type == '=' && val.value == true);
+                });
+            }
+            table.setFilter(filter);
+        })
+
+        $('#filterIncluded').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[1].push({ field: 'status', type: '=', value: 1 });
+            }
+            else {
+                filter[1] = $.grep(filter[1], function (val) {
+                    return !(val.field == 'status' && val.type == '=' && val.value == 1);
+                });
+            }
+            table.setFilter(filter);
+        })
+
+        $('#filterExcluded').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[1].push({ field: 'status', type: '!=', value: 1 });
+            }
+            else {
+                filter[1] = $.grep(filter[1], function (val) {
+                    return !(val.field == 'status' && val.type == '!=' && val.value == 1);
+                });
+            }
+            table.setFilter(filter);
+        })
+
+        $('#filterUnavailable').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[2].push({ field: 'isAvailable', type: '=', value: false });
+            }
+            else {
+                filter[2] = $.grep(filter[2], function (val) {
+                    return !(val.field == 'isAvailable' && val.type == '=' && val.value == false);
+                });
+            }
+            table.setFilter(filter);
+        })
+
+        $('#filterAvailable').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[2].push({ field: 'isAvailable', type: '=', value: true });
+            }
+            else {
+                filter[2] = $.grep(filter[2], function (val) {
+                    return !(val.field == 'isAvailable' && val.type == '=' && val.value == true);
+                });
+            }
+            table.setFilter(filter);
+        })
+
+        $('#filterUnavailable').change(function () {
+            $('#filterAll').prop('checked', false);
+            if (this.checked) {
+                filter[2].push({ field: 'isAvailable', type: '=', value: false });
+            }
+            else {
+                filter[2] = $.grep(filter[2], function (val) {
+                    return !(val.field == 'isAvailable' && val.type == '=' && val.value == false);
+                });
+            }
+            table.setFilter(filter);
+        })
+    </script>
 </body>
 </html>

@@ -12,16 +12,21 @@ namespace MainApp.Services
     public static class TelegramOperatorBot
     {
         private static ITelegramBotClient botClient;
+        public static bool isRunning = false;
 
         public static void StartBot()
         {
             botClient = new TelegramBotClient("1471458337:AAHp5ztCVGbkNkNe6UaRYGZqcWLsQ62-1Ao");
             botClient.OnMessage += Bot_OnMessage;
             botClient.StartReceiving();
+            isRunning = true;
         }
 
         public static void Broadcast(string str)
         {
+            if (isRunning == false)
+                return;
+
             using (MainDbContext db = new MainDbContext())
             {
                 var allOps = db.TelegramUsers.Where(tu => tu.Role == "Operator");
@@ -34,6 +39,9 @@ namespace MainApp.Services
 
         private static void Bot_OnMessage(object sender, MessageEventArgs e)
         {
+            if (isRunning == false)
+                return;
+
             if (e.Message.Text.ToUpper() == "ADDME")
             {
                 using (MainDbContext db = new MainDbContext())
