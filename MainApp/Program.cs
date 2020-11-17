@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Core.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -23,7 +24,7 @@ namespace MainApp
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls("http://*:10200/", "https://*:10201/");
+                    webBuilder.UseUrls($"http://*:{CoreSettings.HttpPort}/", $"https://*:{CoreSettings.HttpsPort}/");
                 });
     }
 }

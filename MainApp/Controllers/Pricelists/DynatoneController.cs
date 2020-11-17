@@ -178,7 +178,7 @@ namespace MainApp.Controllers.Pricelists
 
         [Route("pull")]
         [HttpGet]
-        public IActionResult PullPricelist()
+        public async Task<IActionResult> PullPricelist()
         {
             if (isPulling)
                 return Ok();
@@ -186,14 +186,14 @@ namespace MainApp.Controllers.Pricelists
             pullRecordsProcessed = 0;
             isPulling = true;
 
-            if (hc.DownloadFile(supplierSourceFileURL, tmpCSVFilePath) == false)
-            {
-                isPulling = false;
-                pullRecordsProcessed = -1;
-                return StatusCode(404);
-            }
+            //if (hc.DownloadFile(supplierSourceFileURL, tmpCSVFilePath) == false)
+            //{
+            //    isPulling = false;
+            //    pullRecordsProcessed = -1;
+            //    return StatusCode(404);
+            //}
 
-            using (CsvTextFieldParser reader = new CsvTextFieldParser(tmpCSVFilePath))
+            using (CsvTextFieldParser reader = new CsvTextFieldParser(await hc.GetStreamAsync(supplierSourceFileURL)))
             {
                 reader.Delimiters = new string[] { ";" };
                 

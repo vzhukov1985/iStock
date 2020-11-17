@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Core.Models;
 using Core.Services;
 using DbCore;
 using DbCore.Models;
@@ -39,16 +40,17 @@ namespace MainApp
             services.AddDbContext<MainDbContext>();
 
             services.AddSingleton<HttpClient>();
+            services.AddSingleton<ControllersManager>();
 
             //TODO: Delete after deployment
-/*            services.AddLiveReload();
+            services.AddLiveReload();
             services.AddRazorPages().AddRazorRuntimeCompilation();
             services.AddMvc().AddRazorRuntimeCompilation();
-*/
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, HttpClient hc, ControllersManager cManager, IHostApplicationLifetime appLifetime)
         {
             if (env.IsDevelopment())
             {
@@ -63,14 +65,6 @@ namespace MainApp
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            //TODO: Delete after deployment and change in _Layout.html all script links to other servers
-            /* app.UseFileServer(new FileServerOptions()
-             {
-                 FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "node_modules")),
-                 RequestPath = "/node_modules",
-                 EnableDirectoryBrowsing = false
-             });*/
-
             app.UseRouting();
 
             app.UseAuthorization();
@@ -83,6 +77,11 @@ namespace MainApp
             });
 
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+
+            AutoExchangeRates.UpdateRates(hc);
+
+            appLifetime.ApplicationStarted.Register(() => OnStarted(hc, cManager));
+
             try
             {
                 TelegramOperatorBot.StartBot();
@@ -91,7 +90,15 @@ namespace MainApp
             {
                 TelegramOperatorBot.isRunning = false;
             }
-        
+        }
+
+        public void OnStarted(HttpClient hc, ControllersManager cManager)
+        {
+            foreach (var controller in cManager.Controllers)
+            {
+
+                hc.PostAsJsonAsync($"https://localhost:{CoreSettings.HttpsPort}/{controller.ControllerName}/setControllerId", controller.Id.ToString());
+            }
         }
     }
 }

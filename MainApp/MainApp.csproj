@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>istock</AssemblyName>
     <UserSecretsId>2a1b647c-fdfc-4236-bc0d-9ad03b925297</UserSecretsId>
+    <ReleaseVersion>1.0</ReleaseVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,15 +30,15 @@
   <ItemGroup>
     <PackageReference Include="CsvTextFieldParser" Version="1.2.1" />
     <PackageReference Include="EPPlus" Version="5.4.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.9" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.1.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.9">
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.1.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.10">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
     <PackageReference Include="Telegram.Bot" Version="15.7.1" />
-    <PackageReference Include="Westwind.AspNetCore.LiveReload" Version="0.2.14" />
+    <PackageReference Include="Westwind.AspNetCore.LiveReload" Version="0.3.0" />
   </ItemGroup>
 
   <ItemGroup>

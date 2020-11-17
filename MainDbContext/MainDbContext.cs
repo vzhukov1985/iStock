@@ -10,13 +10,16 @@ namespace DbCore
 {
     public class MainDbContext : DbContext
     {
+        //public static string ConnectionString = @"server=192.168.1.3;port=3306;UserId=istockbe;Password=gjW81!-sf+Gb_dr;database=istock";
+        public static string ConnectionString = @"server=localhost;port=3306;UserId=istockbe;Password=gjW81!-sf+Gb_dr;database=istock";
+
         public MainDbContext()
         {
             Database.EnsureCreated();
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseMySql(CoreSettings.ConnectionString);
+            optionsBuilder.UseMySql(ConnectionString);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

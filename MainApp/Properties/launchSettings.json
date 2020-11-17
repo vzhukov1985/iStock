@@ -19,10 +19,10 @@
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "https://localhost:10201",
+      "applicationUrl": "https://localhost:10201",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "https://localhost:10201"
+      }
     }
   }
 }
