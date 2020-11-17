@@ -32,6 +32,7 @@ namespace MainApp.Controllers.Pricelists
             db = dbContext;
             hc = client;
             cManager = manager;
+            pricelistId = Guid.Parse("9a35d1cc-bff4-4b52-ab08-b06f0934d933");
             supplierSourceFileURL = "https://grandm.ru/upload/grandm_ru_dealer_price.csv";
             currency = "RUB";
             PriceFormula = Formulas.StandardPriceFormula;

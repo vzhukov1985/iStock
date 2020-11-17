@@ -48,8 +48,8 @@ namespace MainApp.Controllers.Pricelists
         {
             db = dbContext;
             hc = client;
-            pricelistId = Guid.Parse("82f9dbe9-1519-430d-9f37-2fe2a6786900");
             supplierName = "dynatone";
+            pricelistId = Guid.Parse("82f9dbe9-1519-430d-9f37-2fe2a6786900");
             supplierSourceFileURL = "http://opt.dynatone.ru/opt/getfile.php?fn=Product&ft=CSVdescr&pr=all&i=6174&d=1514451600";
             currency = "RUB";
             PriceFormula = Formulas.StandardPriceFormula;

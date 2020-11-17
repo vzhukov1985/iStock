@@ -96,8 +96,7 @@ namespace MainApp
         {
             foreach (var controller in cManager.Controllers)
             {
-
-                hc.PostAsJsonAsync($"https://localhost:{CoreSettings.HttpsPort}/{controller.ControllerName}/setControllerId", controller.Id.ToString());
+                //hc.PostAsJsonAsync($"https://localhost:{CoreSettings.HttpsPort}/{controller.ControllerName}/setControllerId", controller.Id.ToString()).Wait();
             }
         }
     }

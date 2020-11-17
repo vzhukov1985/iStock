@@ -46,5 +46,11 @@
     <ProjectReference Include="..\MainDbContext\MainDbContext.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="localhost.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <ProjectExtensions><VisualStudio><UserProperties NpmRestoreOnProjectOpen="True" /></VisualStudio></ProjectExtensions>
 </Project>
