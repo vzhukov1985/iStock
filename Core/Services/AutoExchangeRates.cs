@@ -29,7 +29,7 @@ namespace Core.Services
             }
         }
 
-        public static async void UpdateRates(HttpClient hc)
+        public static async void UpdateRatesAsync(HttpClient hc)
         {
             string allRatesData;
 

@@ -65,7 +65,7 @@
 @section Scripts
 {
     <script>
-        var controllerName;
+@*        var controllerName;
         window.addEventListener("pageshow", function (event) {
             var historyTraversal = event.persisted ||
                 (typeof window.performance != "undefined" &&
@@ -75,7 +75,7 @@
                 setTimeout(setInitialInfo, 200);
             }
         });
-
+*@
 
         var updatePullStatusTimer;
 
@@ -109,11 +109,12 @@
             }
         });
 
-        function setInitialInfo() {
+        async function setInitialInfo() {
             intervalUpdate();
             table.getData().forEach(function (value, index, array) {
                 $.ajax({
                     type: 'GET',
+                    async: true,
                     url: "/" + value['controller'] + "/getItemsToVerifyCount/",
                     datatype: "json",
                     success: function (response) {
@@ -163,6 +164,7 @@
                                     table.updateData([{ id: value['id'], lastPull: response }])
                                     $.ajax({
                                         type: 'GET',
+                                        async: true,
                                         url: "/" + value['controller'] + "/getItemsToVerifyCount/",
                                         datatype: "json",
                                         success: function (response) {
@@ -228,7 +230,10 @@
                         url: "/" + selRec['controller'] + "/getLastPull/",
                         datatype: "json",
                         success: function (response) {
-                            table.updateData([{ id: selRec['id'], lastPull: response }])
+                            if (table.getSelectedData()[0]['isPulling'] == false) {
+                                enableButtons();
+                            }
+                            table.updateData([{ id: selRec['id'], lastPull: response, isPulling:false }])
                         }
                     });
                 },

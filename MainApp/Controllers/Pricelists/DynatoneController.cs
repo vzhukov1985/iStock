@@ -26,179 +26,57 @@ namespace MainApp.Controllers.Pricelists
     [Route("dynatone")]
     public class DynatoneController : Controller
     {
-        private delegate double GenericPriceFormula(double supplierPrice, double exchangeRate);
-
-        private static Guid pricelistId;
-        private string supplierSourceFileURL;
-        private string supplierName;
-        private static bool isPulling;
-        private static int pullRecordsProcessed;
-        private static double exchangeRate;
-        private static byte[] excelFileData;
-        private string currency;
-        private GenericPriceFormula PriceFormula;
-        private GenericPriceFormula PriceLimitFormula;
         private DbSet<DynatoneOffer> supplierSet;
-        private string tmpCSVFilePath;
 
-        private MainDbContext db;
-        private HttpClient hc;
+        protected delegate double GenericPriceFormula(double supplierPrice, double exchangeRate);
 
-        public DynatoneController(MainDbContext dbContext, HttpClient client, IWebHostEnvironment env)
+        protected static Guid pricelistId;
+        protected string supplierSourceFileURL;
+        protected string supplierName;
+        protected double exchangeRate;
+        protected string currency;
+        protected GenericPriceFormula PriceFormula;
+        protected GenericPriceFormula PriceLimitFormula;
+
+
+        protected MainDbContext db;
+        protected HttpClient hc;
+        protected ControllersManager cManager;
+
+        public DynatoneController(MainDbContext dbContext, HttpClient client, ControllersManager manager)
         {
             db = dbContext;
             hc = client;
-            supplierName = "dynatone";
+            cManager = manager;
             pricelistId = Guid.Parse("82f9dbe9-1519-430d-9f37-2fe2a6786900");
+            supplierName = cManager[pricelistId].SupplierName;
             supplierSourceFileURL = "http://opt.dynatone.ru/opt/getfile.php?fn=Product&ft=CSVdescr&pr=all&i=6174&d=1514451600";
             currency = "RUB";
             PriceFormula = Formulas.StandardPriceFormula;
             PriceLimitFormula = Formulas.StandardPriceLimitFormula;
             supplierSet = db.Dynatone;
-            tmpCSVFilePath = $"{env.ContentRootPath}/{supplierName}.tmp";
-        }
-
-        private void UpdateExchangeRate()
-        {
-            double? exRate = db.Pricelists.Where(pl => pl.Id == pricelistId).Select(pl => pl.ExchangeRate).FirstOrDefault();
-            if (exRate == null)
-            {
-                exRate = hc.GetExchangeRate(currency).Result;
-            }
-
-            if (exRate == null)
-            {
-                exchangeRate = 0;
-            }
-            else
-            {
-                exchangeRate = (double)exRate;
-            }
-        }
-
-        [Route("")]
-        [HttpGet("{id}")]
-        public IActionResult Index([FromRoute] string id)
-        {
             UpdateExchangeRate();
-            ViewData["SearchSku"] = string.IsNullOrEmpty(id) ? "" : id;
-            return View("Main");
-        }
-
-        [Route("getAutoExchangeRate")]
-        [HttpGet]
-        public IActionResult GetAutoExchangeRate()
-        {
-            return Ok(hc.GetExchangeRate(currency).Result);
-        }
-
-        [Route("setControllerId")]
-        [HttpPost]
-        public IActionResult SetControllerId([FromBody] string id)
-        {
-            pricelistId = Guid.Parse(id);
-            return Ok();
-        }
-
-
-        [Route("getPricelistHeader")]
-        public IActionResult GetPricelistHeader()
-        {
-            var plRec = db.Pricelists.Where(i => i.Id == pricelistId).Select(i => new { i.Id, i.SupplierName, i.Name }).FirstOrDefault();
-            return Ok(new
-            {
-                plRec.SupplierName,
-                plRec.Name
-            });
-        }
-
-        [Route("getLastPull")]
-        [HttpGet]
-        public IActionResult GetLastPull()
-        {
-            return Ok(db.Pricelists.Where(i => i.Id == pricelistId).Select(i => i.LastPull == null ? "Нет" : ((DateTime)i.LastPull).ToString("dd/MM/yyyy HH:mm")).FirstOrDefault());
-        }
-
-        [Route("getItemsToVerifyCount")]
-        [HttpGet]
-        public IActionResult GetItemsToVerifyCount()
-        {
-            return Ok(db.VectorOffers.Count(vo => vo.PricelistId == pricelistId && vo.IsVerified == false));
-        }
-
-        [HttpGet("settings")]
-        public IActionResult GetPricelistSettings()
-        {
-            UpdateExchangeRate();
-            var res = db.Pricelists.Where(p => p.Id == pricelistId).Select(p => new
-            {
-                p.Name,
-                p.SupplierName,
-                p.PreorderInDays,
-                p.MinStockAvail,
-                p.IsFavorite,
-                IsAutoExchangeRate = p.ExchangeRate == null,
-                ExchangeRateCurrency = currency
-            }).FirstOrDefault();
-
-            return Ok(new
-            {
-                res.Name,
-                res.SupplierName,
-                res.PreorderInDays,
-                res.MinStockAvail,
-                res.IsFavorite,
-                res.IsAutoExchangeRate,
-                ExchangeRate = exchangeRate,
-                res.ExchangeRateCurrency
-            });
-        }
-
-        [HttpPost("settings")]
-        public IActionResult SetPricelistSettings([FromBody] dynamic a)
-        {
-            var pl = db.Pricelists.Where(p => p.Id == pricelistId).FirstOrDefault();
-            pl.SupplierName = (string)a["supplierName"];
-            pl.Name = (string)a["name"];
-            pl.PreorderInDays = (int)a["preorderInDays"];
-            pl.MinStockAvail = (int)a["minStockAvail"];
-            pl.IsFavorite = (bool)a["isFavorite"];
-            if ((bool)a["isCustomExchangeRate"])
-            {
-                pl.ExchangeRate = (double)a["CustomExchangeRate"];
-            }
-            else
-            {
-                pl.ExchangeRate = null;
-            }
-            db.SaveChanges();
-            UpdateExchangeRate();
-            return Ok();
         }
 
         [Route("pull")]
         [HttpGet]
         public async Task<IActionResult> PullPricelist()
         {
-            if (isPulling)
+            if (cManager[pricelistId].IsPulling)
                 return Ok();
 
-            pullRecordsProcessed = 0;
-            isPulling = true;
+            cManager[pricelistId].IsPulling = true;
+            cManager[pricelistId].PullRecordsProcessed = 0;
 
-            //if (hc.DownloadFile(supplierSourceFileURL, tmpCSVFilePath) == false)
-            //{
-            //    isPulling = false;
-            //    pullRecordsProcessed = -1;
-            //    return StatusCode(404);
-            //}
+            List<Guid> processedRecordIds = new List<Guid>();
 
             using (CsvTextFieldParser reader = new CsvTextFieldParser(await hc.GetStreamAsync(supplierSourceFileURL)))
             {
                 reader.Delimiters = new string[] { ";" };
-                
                 reader.ReadFields(); //read header
+
                 string[] col;
+
                 while (!reader.EndOfData)
                 {
                     try
@@ -255,6 +133,7 @@ namespace MainApp.Controllers.Pricelists
 
                         db.Add(supplierRecordToProcess);
                         db.Add(newVectorOffer);
+                        processedRecordIds.Add(supplierRecordToProcess.Id);
                     }
                     else
                     {
@@ -289,11 +168,17 @@ namespace MainApp.Controllers.Pricelists
                             existingVectorOffer.IsVerified = false;
                         }
                         db.Update(existingVectorOffer);
+                        processedRecordIds.Add(existingSupplierRecord.Id);
                     }
-                    pullRecordsProcessed++;
+                    cManager[pricelistId].PullRecordsProcessed++;
+
                 }
 
-                pullRecordsProcessed = -1;
+                cManager[pricelistId].PullRecordsProcessed = -1;
+
+                db.VectorOffers.RemoveRange(db.VectorOffers.Where(vo => vo.PricelistId == pricelistId && !processedRecordIds.Contains(vo.Id)));
+                supplierSet.RemoveRange(supplierSet.Where(ss => !processedRecordIds.Contains(ss.Id)));
+
                 var pricelistRec = db.Pricelists.Where(i => i.Id == pricelistId).FirstOrDefault();
                 pricelistRec.LastPull = DateTime.Now;
                 db.SaveChanges();
@@ -304,51 +189,10 @@ namespace MainApp.Controllers.Pricelists
                                    allRecs.Count(i => i.Status == VectorOfferStatus.PriceChanged),
                                    allRecs.Count(i => i.Status == VectorOfferStatus.PriceAndDescriptionChanged));
 
-                isPulling = false;
+                cManager[pricelistId].IsPulling = false;
 
                 return Ok();
             }
-        }
-
-        private void SendTelegramStatus(int unverifiedCount, int descriptionChangedCount, int priceChangedCount, int priceAndDescriptionChangedCount)
-        {
-            if (unverifiedCount == 0 && descriptionChangedCount == 0 && priceChangedCount == 0 && priceAndDescriptionChangedCount == 0)
-                return;
-
-            var plInfo = db.Pricelists.Where(pl => pl.Id == pricelistId).Select(pl => new { pl.SupplierName, pl.Name }).FirstOrDefault();
-
-            string message = $"ВНИМАНИЕ!!!\nВ прайс-листе <b>\"{plInfo.SupplierName} - { plInfo.Name}\"</b>\n";
-            if (unverifiedCount > 0)
-            {
-                message += $"<b>{unverifiedCount}</b> непросмотренных позиций\n";
-            }
-            if (descriptionChangedCount > 0)
-            {
-                message += $"<b>{descriptionChangedCount}</b> позиций, у которых изменилось описание\n";
-            }
-            if (priceChangedCount > 0)
-            {
-                message += $"<b>{priceChangedCount}</b> позиций, у которых изменилось цена\n";
-            }
-            if (priceAndDescriptionChangedCount > 0)
-            {
-                message += $"<b>{priceAndDescriptionChangedCount}</b> позиций, у которых изменились и цена, и описание\n";
-            }
-            TelegramOperatorBot.Broadcast(message);
-        }
-
-        [Route("pull/ispulling")]
-        [HttpGet]
-        public IActionResult IsPulling()
-        {
-            return Ok(isPulling);
-        }
-
-        [Route("pull/pullrecsprocessed")]
-        [HttpGet]
-        public IActionResult GetPullRecordsProcessed()
-        {
-            return Ok(pullRecordsProcessed);
         }
 
         [Route("getbriefdata")]
@@ -388,61 +232,6 @@ namespace MainApp.Controllers.Pricelists
             return Ok(rec);
         }
 
-        [Route("setIsVerified/{id}")]
-        [HttpPost]
-        public IActionResult SetIsVerified([FromRoute] string id, [FromBody] bool value)
-        {
-            var rec = db.VectorOffers.Where(i => i.Id == Guid.Parse(id)).FirstOrDefault();
-            if (rec.IsVerified != value)
-            {
-                rec.IsVerified = value;
-                db.Update(rec);
-                db.SaveChanges();
-            }
-            return Ok();
-        }
-        [Route("setAllIsVerified")]
-        [HttpPost]
-        public IActionResult SetAllIsVerified([FromBody] bool value)
-        {
-            var allRecs = db.VectorOffers.Where(i => i.PricelistId == pricelistId);
-            foreach (var rec in allRecs)
-            {
-                rec.IsVerified = value;
-                db.Update(rec);
-            }
-            var plRec = db.Pricelists.Where(i => i.Id == pricelistId).FirstOrDefault();
-            db.Update(plRec);
-            db.SaveChanges();
-            return Ok();
-        }
-
-
-        [Route("setStatus/{id}")]
-        [HttpPost]
-        public IActionResult SetStatus([FromRoute] string id, [FromBody] int value)
-        {
-            var rec = db.VectorOffers.Where(i => i.Id == Guid.Parse(id)).FirstOrDefault();
-            rec.Status = (VectorOfferStatus)value;
-            db.Update(rec);
-            db.SaveChanges();
-            return Ok();
-        }
-
-        [Route("setAllStatus")]
-        [HttpPost]
-        public IActionResult SetAllStatus([FromBody] int value)
-        {
-            var allRecs = db.VectorOffers.Where(i => i.PricelistId == pricelistId);
-            foreach (var rec in allRecs)
-            {
-                rec.Status = (VectorOfferStatus)value;
-                db.Update(rec);
-            }
-            db.SaveChanges();
-            return Ok();
-        }
-
         [Route("setGroupStatus")]
         [HttpPost]
         public IActionResult SetGroupStatus([FromBody] dynamic qparams)
@@ -462,28 +251,6 @@ namespace MainApp.Controllers.Pricelists
                 rec.Status = (VectorOfferStatus)(int)qparams["value"];
                 db.Update(rec);
             }
-            db.SaveChanges();
-            return Ok();
-        }
-
-        [Route("setCustomValue/{id}")]
-        [HttpPost]
-        public IActionResult SetCustomValue([FromRoute] string id, [FromBody] dynamic qParams)
-        {
-            string field = (string)qParams["field"];
-            var rec = db.VectorOffers.Where(i => i.Id == Guid.Parse(id)).FirstOrDefault();
-            var recField = char.ToUpper(field[0]) + field.Substring(1);
-
-            string strVal = (string)qParams["value"];
-            if (recField == "Price" || recField == "PriceLimit")
-            {
-                rec[recField] = strVal.ParseNullableDouble();
-            }
-            else
-            {
-                rec[recField] = strVal;
-            }
-            db.Update(rec);
             db.SaveChanges();
             return Ok();
         }
@@ -608,8 +375,229 @@ namespace MainApp.Controllers.Pricelists
                         curRow++;
                     }
                 }
-                excelFileData = package.GetAsByteArray();
+                cManager[pricelistId].ExcelFileData = package.GetAsByteArray();
             }
+            return Ok();
+        }
+
+        protected void UpdateExchangeRate()
+        {
+            double? exRate = db.Pricelists.Where(pl => pl.Id == pricelistId).Select(pl => pl.ExchangeRate).FirstOrDefault();
+            if (exRate == null)
+            {
+                exchangeRate = AutoExchangeRates.getRate(currency);
+            }
+            else
+            {
+                exchangeRate = (double)exRate;
+            }
+        }
+
+        [Route("")]
+        [HttpGet("{id}")]
+        public IActionResult Index([FromRoute] string id)
+        {
+            UpdateExchangeRate();
+            ViewData["SearchSku"] = string.IsNullOrEmpty(id) ? "" : id;
+            return View("Main");
+        }
+
+        [Route("getAutoExchangeRate")]
+        [HttpGet]
+        public IActionResult GetAutoExchangeRate()
+        {
+            return Ok(AutoExchangeRates.getRate(currency));
+        }
+
+        [Route("setControllerId")]
+        [HttpPost]
+        public IActionResult SetControllerId([FromBody] string id)
+        {
+            pricelistId = Guid.Parse(id);
+            return Ok();
+        }
+
+        [Route("getPricelistHeader")]
+        public IActionResult GetPricelistHeader()
+        {
+            return Ok(db.Pricelists.Where(pl => pl.Id == pricelistId).Select(pl => new
+            {
+                pl.SupplierName,
+                pl.Name
+            }).FirstOrDefault());
+
+        }
+
+        [Route("getLastPull")]
+        [HttpGet]
+        public IActionResult GetLastPull()
+        {
+            return Ok(db.Pricelists.Where(i => i.Id == pricelistId).Select(i => i.LastPull == null ? "Нет" : ((DateTime)i.LastPull).ToString("dd/MM/yyyy HH:mm")).FirstOrDefault());
+        }
+
+        [Route("getItemsToVerifyCount")]
+        [HttpGet]
+        public IActionResult GetItemsToVerifyCount()
+        {
+            return Ok(db.VectorOffers.Count(vo => vo.PricelistId == pricelistId && vo.IsVerified == false));
+        }
+
+        [HttpGet("settings")]
+        public IActionResult GetPricelistSettings()
+        {
+            var res = db.Pricelists.Where(p => p.Id == pricelistId).Select(p => new
+            {
+                p.Name,
+                p.SupplierName,
+                p.PreorderInDays,
+                p.MinStockAvail,
+                p.IsFavorite,
+                IsAutoExchangeRate = p.ExchangeRate == null,
+                ExchangeRate = p.ExchangeRate == null ? AutoExchangeRates.getRate(currency) : p.ExchangeRate,
+                ExchangeRateCurrency = currency
+            }).FirstOrDefault();
+
+            return Ok(res);
+
+        }
+
+        [HttpPost("settings")]
+        public IActionResult SetPricelistSettings([FromBody] dynamic a)
+        {
+            var pl = db.Pricelists.Where(p => p.Id == pricelistId).FirstOrDefault();
+            pl.SupplierName = (string)a["supplierName"];
+            pl.Name = (string)a["name"];
+            pl.PreorderInDays = (int)a["preorderInDays"];
+            pl.MinStockAvail = (int)a["minStockAvail"];
+            pl.IsFavorite = (bool)a["isFavorite"];
+            if ((bool)a["isCustomExchangeRate"])
+            {
+                pl.ExchangeRate = (double)a["CustomExchangeRate"];
+            }
+            else
+            {
+                pl.ExchangeRate = null;
+            }
+            db.SaveChanges();
+            UpdateExchangeRate();
+            return Ok();
+        }
+
+        protected void SendTelegramStatus(int unverifiedCount, int descriptionChangedCount, int priceChangedCount, int priceAndDescriptionChangedCount)
+        {
+            if (unverifiedCount == 0 && descriptionChangedCount == 0 && priceChangedCount == 0 && priceAndDescriptionChangedCount == 0)
+                return;
+
+            var plInfo = db.Pricelists.Where(pl => pl.Id == pricelistId).Select(pl => new { pl.SupplierName, pl.Name }).FirstOrDefault();
+
+            string message = $"ВНИМАНИЕ!!!\nВ прайс-листе <b>\"{plInfo.SupplierName} - { plInfo.Name}\"</b>\n";
+            if (unverifiedCount > 0)
+            {
+                message += $"<b>{unverifiedCount}</b> непросмотренных позиций\n";
+            }
+            if (descriptionChangedCount > 0)
+            {
+                message += $"<b>{descriptionChangedCount}</b> позиций, у которых изменилось описание\n";
+            }
+            if (priceChangedCount > 0)
+            {
+                message += $"<b>{priceChangedCount}</b> позиций, у которых изменилось цена\n";
+            }
+            if (priceAndDescriptionChangedCount > 0)
+            {
+                message += $"<b>{priceAndDescriptionChangedCount}</b> позиций, у которых изменились и цена, и описание\n";
+            }
+            TelegramOperatorBot.Broadcast(message);
+        }
+
+        [Route("pull/ispulling")]
+        [HttpGet]
+        public IActionResult IsPulling()
+        {
+            return Ok(cManager[pricelistId].IsPulling);
+        }
+
+        [Route("pull/pullrecsprocessed")]
+        [HttpGet]
+        public IActionResult GetPullRecordsProcessed()
+        {
+            return Ok(cManager[pricelistId].PullRecordsProcessed);
+        }
+
+        [Route("setIsVerified/{id}")]
+        [HttpPost]
+        public IActionResult SetIsVerified([FromRoute] string id, [FromBody] bool value)
+        {
+            var rec = db.VectorOffers.Where(i => i.Id == Guid.Parse(id)).FirstOrDefault();
+            if (rec.IsVerified != value)
+            {
+                rec.IsVerified = value;
+                db.Update(rec);
+                db.SaveChanges();
+            }
+            return Ok();
+        }
+
+        [Route("setAllIsVerified")]
+        [HttpPost]
+        public IActionResult SetAllIsVerified([FromBody] bool value)
+        {
+            var allRecs = db.VectorOffers.Where(i => i.PricelistId == pricelistId);
+            foreach (var rec in allRecs)
+            {
+                rec.IsVerified = value;
+                db.Update(rec);
+            }
+            var plRec = db.Pricelists.Where(i => i.Id == pricelistId).FirstOrDefault();
+            db.Update(plRec);
+            db.SaveChanges();
+            return Ok();
+        }
+
+        [Route("setStatus/{id}")]
+        [HttpPost]
+        public IActionResult SetStatus([FromRoute] string id, [FromBody] int value)
+        {
+            var rec = db.VectorOffers.Where(i => i.Id == Guid.Parse(id)).FirstOrDefault();
+            rec.Status = (VectorOfferStatus)value;
+            db.Update(rec);
+            db.SaveChanges();
+            return Ok();
+        }
+
+        [Route("setAllStatus")]
+        [HttpPost]
+        public IActionResult SetAllStatus([FromBody] int value)
+        {
+            var allRecs = db.VectorOffers.Where(i => i.PricelistId == pricelistId);
+            foreach (var rec in allRecs)
+            {
+                rec.Status = (VectorOfferStatus)value;
+                db.Update(rec);
+            }
+            db.SaveChanges();
+            return Ok();
+        }
+
+        [Route("setCustomValue/{id}")]
+        [HttpPost]
+        public IActionResult SetCustomValue([FromRoute] string id, [FromBody] dynamic qParams)
+        {
+            string field = (string)qParams["field"];
+            var rec = db.VectorOffers.Where(i => i.Id == Guid.Parse(id)).FirstOrDefault();
+            var recField = char.ToUpper(field[0]) + field.Substring(1);
+
+            string strVal = (string)qParams["value"];
+            if (recField == "Price" || recField == "PriceLimit")
+            {
+                rec[recField] = strVal.ParseNullableDouble();
+            }
+            else
+            {
+                rec[recField] = strVal;
+            }
+            db.Update(rec);
+            db.SaveChanges();
             return Ok();
         }
 
@@ -618,7 +606,7 @@ namespace MainApp.Controllers.Pricelists
         {
             var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             var fileName = $"{supplierName} - {DateTime.Now:dd.MM.yyyy - HH-mm}.xlsx";
-            return File(excelFileData, contentType, fileName);
+            return File(cManager[pricelistId].ExcelFileData, contentType, fileName);
         }
     }
 }

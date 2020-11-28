@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Core.Services;
 using DbCore;
 using MainApp.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +16,12 @@ namespace MainApp.Controllers
     public class HomeController : Controller
     {
         MainDbContext db;
+        HttpClient hc;
 
-        public HomeController(MainDbContext dbContext)
+        public HomeController(MainDbContext dbContext, HttpClient client)
         {
             db = dbContext;
+            hc = client;
         }
 
         [HttpGet("pricelists/getallbrief")]
@@ -40,6 +44,7 @@ namespace MainApp.Controllers
 
         public IActionResult Index()
         {
+            AutoExchangeRates.UpdateRatesAsync(hc);
             return View();
         }
 

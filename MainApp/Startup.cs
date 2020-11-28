@@ -78,7 +78,7 @@ namespace MainApp
 
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
 
-            AutoExchangeRates.UpdateRates(hc);
+            AutoExchangeRates.UpdateRatesAsync(hc);
 
             appLifetime.ApplicationStarted.Register(() => OnStarted(hc, cManager));
 

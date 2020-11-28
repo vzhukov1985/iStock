@@ -18,7 +18,7 @@
                 $('#exchangeRateCustom').prop('checked', true);
                 $('#exchangeRateVal').removeAttr('disabled');
             }
-            $('#exchangeRateVal').val(response.exchangeRate);
+            $('#exchangeRateVal').val(response.exchangeRate.toFixed(2));
             $('#plSettingsModal').modal('show');
         }
     });
@@ -31,7 +31,7 @@ $('input[type=radio][name=exchangeRateType]').change(function () {
             type: 'GET',
             url: "/" + controllerName + "/getAutoExchangeRate",
             success: function (response) {
-                $('#exchangeRateVal').val(response);
+                $('#exchangeRateVal').val(response.toFixed(2));
             }
         });
     }
