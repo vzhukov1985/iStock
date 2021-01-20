@@ -3,14 +3,16 @@ using System;
 using DbCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DbCore.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    partial class MainDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210119190819_AddedPullMethodType")]
+    partial class AddedPullMethodType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -299,49 +301,6 @@ namespace DbCore.Migrations
                         .HasName("PRIMARY");
 
                     b.ToTable("grandm");
-                });
-
-            modelBuilder.Entity("DbCore.PLModels.PleerOffer", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<string>("Catalog")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<int>("Diler1")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Diler2")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Diler3")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Diler4")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Garantiya")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("KodTovara")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("Naimenovanie")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<int>("Nalichie")
-                        .HasColumnType("int");
-
-                    b.Property<string>("NomerTovara")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
-
-                    b.ToTable("pleer");
                 });
 #pragma warning restore 612, 618
         }

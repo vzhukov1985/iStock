@@ -1,0 +1,68 @@
+﻿@{
+    Layout = "_PricelistMainLayout";
+    ViewData["Title"] = "Плеер";
+}
+
+@section SupplierItemView
+{
+    <span><b>Номер товара:</b></span>
+    <span id="NomerTovara"></span>
+    <br />
+    <span><b>Каталог:</b></span>
+    <span id="Catalog"></span>
+    <br />
+    <span><b>Код товара:</b></span>
+    <span id="KodTovara"></span>
+    <br />
+    <span><b>Наименование:</b></span>
+    <span id="Naimenovanie"></span>
+    <br />
+    <span><b>Гарантия:</b></span>
+    <span id="Garantiya"></span>
+    <br />
+    <span><b>Наличие:</b></span>
+    <span id="Nalichie"></span>
+    <br />
+    <span><b>Дилер1:</b></span>
+    <span id="Diler1"></span>
+    <br />
+    <span><b>Дилер2:</b></span>
+    <span id="Diler2"></span>
+    <br />
+    <span><b>Дилер3:</b></span>
+    <span id="Diler3"></span>
+    <br />
+    <span><b>Дилер4:</b></span>
+    <span id="Diler4"></span>
+}
+
+@section Scripts
+{
+    <script>controllerName = 'pleer';</script>
+}
+
+@section CodeGroupColumnSetupJS
+{
+    {
+    title: "Категория",
+    field: "groupCode",
+    width: 180,
+    formatter: groupCodeFormatter,
+    contextMenu: cmCodeGroupCell.concat(cmGeneral)
+    },
+}
+
+@section ShowSupplierItemDataJS
+{
+
+    $('#NomerTovara').html(response.nomerTovara);
+    $('#Catalog').html(response.catalog);
+    $('#KodTovara').html(response.kodTovara);
+    $('#Naimenovanie').html(response.naimenovanie);
+    $('#Garantiya').html(response.garantiya);
+    $('#Nalichie').html(response.nalichie);
+    $('#Diler1').html(response.diler1);
+    $('#Diler2').html(response.diler2);
+    $('#Diler3').html(response.diler3);
+    $('#Diler4').html(response.diler4);
+}

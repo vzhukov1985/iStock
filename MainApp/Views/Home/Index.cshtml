@@ -61,22 +61,11 @@
 
 @await Html.PartialAsync("_PlDownloadXLSModal")
 @await Html.PartialAsync("_PlSettingsModal")
+@await Html.PartialAsync("_PlUploadModal")
 
 @section Scripts
 {
     <script>
-@*        var controllerName;
-        window.addEventListener("pageshow", function (event) {
-            var historyTraversal = event.persisted ||
-                (typeof window.performance != "undefined" &&
-                    window.performance.navigation.type === 2);
-            if (historyTraversal) {
-                // Handle page restore.
-                setTimeout(setInitialInfo, 200);
-            }
-        });
-*@
-
         var updatePullStatusTimer;
 
         var table = new Tabulator("#pricelists-table", {
@@ -109,6 +98,66 @@
             }
         });
 
+        var viewButtonClicked = false;
+
+        var manualFileInput = document.createElement('input');
+        manualFileInput.type = 'file';
+        manualFileInput.onchange = e => onManualFileUpload(e);
+        function onManualFileUpload(e) {
+
+            var files = e.target.files;
+
+            var formData = new FormData();
+
+            for (var i = 0; i != files.length; i++) {
+                formData.append("files", files[i]);
+            }
+
+            if (files.length > 0) {
+                table.updateData([{ id: table.getSelectedData()[0].id, isPulling: true }])
+                disableButtons();
+                $('#plUploadModal').modal('show');
+                $('#uploadProgress').attr('aria-valuenow', 0).css('width', 0 + '%');
+            }
+            setTimeout(() => {
+
+                $.ajax({
+                    xhr: function () {
+                        var xhr = new window.XMLHttpRequest();
+                        xhr.upload.addEventListener("progress", function (evt) {
+                            if (evt.lengthComputable) {
+                                var progress = Math.round(evt.loaded / evt.total * 100);
+                                console.log("Progress:" + progress);
+                                $('#uploadProgress').attr('aria-valuenow', progress).css('width', progress + '%').html(progress +'%');
+                                if (progress >= 100) {
+                                    $('#plUploadModal').modal('hide');
+                                }
+                            }
+                        }, false);
+                        return xhr;
+                    },
+                    type: 'POST',
+                    url: "/" + controllerName + "/pull",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        $('#plUploadModal').modal('hide');
+                        if (response != "") {
+                            alert(response);
+                        }
+                    },
+                    error: function () {
+                        $('#plUploadModal').modal('hide');
+                        if (viewButtonClicked == false) {
+                            alert('Ошибка соединения с сервером');
+                            enableButtons();
+                        }
+                    }
+                });
+            }, 500);
+        }
+
         async function setInitialInfo() {
             intervalUpdate();
             table.getData().forEach(function (value, index, array) {
@@ -122,7 +171,7 @@
                     }
                 });
             })
-            setInterval(intervalUpdate, 2000);
+            setInterval(intervalUpdate, 500);
         }
 
         function intervalUpdate() {
@@ -135,6 +184,7 @@
                     success: function (response) {
                         if (response) {
                             table.updateData([{ id: value['id'], isPulling: true }])
+                            if (table.getSelectedData().length > 0 && table.getSelectedData()[0].id == value['id']) { disableButtons(); }
                             $.ajax({
                                 type: 'GET',
                                 async: true,
@@ -155,6 +205,7 @@
                         }
                         else {
                             table.updateData([{ id: value['id'], isPulling: false }])
+                            if (table.getSelectedData().length > 0 && table.getSelectedData()[0].id == value['id']) { enableButtons(); }
                             $.ajax({
                                 type: 'GET',
                                 async: true,
@@ -211,37 +262,53 @@
         }
 
         $('#btnView').on('click', function () {
+            viewButtonClicked = true;
             window.location = table.getSelectedData()[0].controller;
+            setTimeout(() => viewButtonClicked = false, 400);
         })
 
 
 
         $('#btnPull').on('click', function () {
             var selRec = table.getSelectedData()[0];
-            disableButtons();
-            $.ajax({
-                type: 'GET',
-                async: true,
-                url: "/" + selRec['controller'] + "/pull",
-                success: function () {
-                    $.ajax({
-                        type: 'GET',
-                        async: true,
-                        url: "/" + selRec['controller'] + "/getLastPull/",
-                        datatype: "json",
-                        success: function (response) {
-                            if (table.getSelectedData()[0]['isPulling'] == false) {
-                                enableButtons();
+            if (selRec.pullMethodType == 0) {
+                ManualFileUpload();
+            }
+            if (selRec.pullMethodType == 1) {
+                disableButtons();
+                $.ajax({
+                    type: 'GET',
+                    async: true,
+                    url: "/" + selRec['controller'] + "/pull",
+                    success: function () {
+                        $.ajax({
+                            type: 'GET',
+                            async: true,
+                            url: "/" + selRec['controller'] + "/getLastPull/",
+                            datatype: "json",
+                            success: function (response) {
+                                if (table.getSelectedData()[0]['isPulling'] == false) {
+                                    enableButtons();
+                                }
+                                table.updateData([{ id: selRec['id'], lastPull: response, isPulling: false }])
                             }
-                            table.updateData([{ id: selRec['id'], lastPull: response, isPulling:false }])
+                        });
+                    },
+                    error: function () {
+                        if (viewButtonClicked == false) {
+                            alert('Невозможно с соединиться с сервером поставщика');
                         }
-                    });
-                },
-                error: function () {
-                    alert('Невозможно с соединиться с сервером поставщика');
-                }
-            })
+                    }
+                })
+            }
         })
+
+        function ManualFileUpload() {
+
+
+
+            manualFileInput.click();
+        }
 
 
         $('#btnPullAll').on('click', function () {
@@ -255,7 +322,9 @@
                         success: function () {
                         },
                         error: function () {
-                            alert('Невозможно с соединиться с сервером поставщика');
+                            if (viewButtonClicked == false) {
+                                alert('Невозможно с соединиться с сервером поставщика');
+                            }
                         }
                     })
                 }

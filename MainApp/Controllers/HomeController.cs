@@ -33,7 +33,8 @@ namespace MainApp.Controllers
                 p.Id,
                 p.Name,
                 p.SupplierName,
-                lastPull = "",
+                p.PullMethodType,
+                lastPull = p.LastPull == null? "Нет": ((DateTime)p.LastPull).ToString("dd/MM/yyyy HH:mm"),
                 itemsToVerify = 0,
                 p.Controller,
                 isPulling = false
@@ -67,6 +68,16 @@ namespace MainApp.Controllers
                                         v => v.Id,
                                         g => g.Id,
                                         (v, g) => new { v.Id, Sku = v.Sku == null ? $"GM-{g.IdTovara}" : v.Sku, v.PricelistId }).ToList().Where(i => i.Sku == id).Select(j => j.PricelistId).FirstOrDefault();
+
+            if (plId != Guid.Empty)
+            {
+                return Ok(db.Pricelists.Where(p => p.Id == plId).Select(p => p.Controller).FirstOrDefault());
+            }
+
+            plId = db.VectorOffers.Join(db.Pleer,
+                            v => v.Id,
+                            g => g.Id,
+                            (v, g) => new { v.Id, Sku = v.Sku == null ? g.KodTovara : v.Sku, v.PricelistId }).ToList().Where(i => i.Sku == id).Select(j => j.PricelistId).FirstOrDefault();
 
             if (plId != Guid.Empty)
             {

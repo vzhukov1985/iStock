@@ -6,7 +6,6 @@ using DbCore;
 using DbCore.PLModels;
 using Core.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualBasic.FileIO;
 using DbCore.Models;
 using Core.Models;
 using Newtonsoft.Json;
@@ -20,13 +19,14 @@ using MainApp.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using NotVisualBasic.FileIO;
+using Microsoft.AspNetCore.Http;
 
 namespace MainApp.Controllers.Pricelists
 {
-    [Route("dynatone")]
-    public class DynatoneController : Controller
+    [Route("pleer")]
+    public class PleerController : Controller
     {
-        private DbSet<DynatoneOffer> supplierSet;
+        private DbSet<PleerOffer> supplierSet;
 
         protected delegate double GenericPriceFormula(double supplierPrice, double exchangeRate);
 
@@ -43,86 +43,95 @@ namespace MainApp.Controllers.Pricelists
         protected HttpClient hc;
         protected ControllersManager cManager;
 
-        public DynatoneController(MainDbContext dbContext, HttpClient client, ControllersManager manager)
+        public PleerController(MainDbContext dbContext, HttpClient client, ControllersManager manager)
         {
             db = dbContext;
             hc = client;
             cManager = manager;
-            pricelistId = Guid.Parse("82f9dbe9-1519-430d-9f37-2fe2a6786900");
+            pricelistId = Guid.Parse("83e5032e-3ee3-4278-8399-f5d0338c03e6");
             supplierName = cManager[pricelistId].SupplierName;
-            supplierSourceFileURL = "http://opt.dynatone.ru/opt/getfile.php?fn=Product&ft=CSVdescr&pr=all&i=6174&d=1514451600";
+            supplierSourceFileURL = "none";
             currency = "RUB";
-            PriceFormula = Formulas.StandardPriceFormula;
-            PriceLimitFormula = Formulas.StandardPriceLimitFormula;
-            supplierSet = db.Dynatone;
+            PriceFormula = PleerPriceFormula;
+            PriceLimitFormula = PleerLimitPriceFormula;
+            supplierSet = db.Pleer;
             UpdateExchangeRate();
         }
 
+        private double PleerPriceFormula(double supplierPrice, double exchangeRate)
+        {
+            return Math.Round(supplierPrice * 1.41 * exchangeRate);
+        }
+
+        private double PleerLimitPriceFormula(double supplierPrice, double exchangeRate)
+        {
+            return Math.Round(PleerPriceFormula(supplierPrice, exchangeRate) - PleerPriceFormula(supplierPrice, exchangeRate) * 0.05);
+        }
+
         [Route("pull")]
-        [HttpGet]
-        public async Task<IActionResult> PullPricelist()
+        [HttpPost]
+        public async Task<IActionResult> PullPricelist(IList<IFormFile> files)
         {
             if (cManager[pricelistId].IsPulling)
                 return Ok();
 
+            if (files.Count == 0)
+                return Ok("Файл не был получен сервером");
+
             cManager[pricelistId].IsPulling = true;
             cManager[pricelistId].PullRecordsProcessed = 0;
 
-            List<Guid> processedRecordIds = new List<Guid>();
-
             try
             {
-                using (CsvTextFieldParser reader = new CsvTextFieldParser(await hc.GetStreamAsync(supplierSourceFileURL)))
+                using (var package = new ExcelPackage(files[0].OpenReadStream()))
                 {
-                    reader.Delimiters = new string[] { ";" };
-                    reader.ReadFields(); //read header
-
-                    string[] col;
-
-                    while (!reader.EndOfData)
+                    var sheet = package.Workbook.Worksheets[0];
+                    if (!sheet.Cells[1, 1].Value.Equals("Номер товара") ||
+                        !sheet.Cells[1, 2].Value.Equals("Каталог") ||
+                        !sheet.Cells[1, 3].Value.Equals("Код товара") ||
+                        !sheet.Cells[1, 4].Value.Equals("Наименование") ||
+                        !sheet.Cells[1, 5].Value.Equals("Гарантия") ||
+                        !sheet.Cells[1, 6].Value.Equals("Наличие") ||
+                        !sheet.Cells[1, 7].Value.Equals("Дилер1") ||
+                        !sheet.Cells[1, 8].Value.Equals("Дилер2") ||
+                        !sheet.Cells[1, 9].Value.Equals("Дилер3") ||
+                        !sheet.Cells[1, 10].Value.Equals("Дилер4"))
                     {
-                        try
-                        {
-                            col = reader.ReadFields();
-                        }
-                        catch
-                        {
-                            continue;
-                        }
+                        cManager[pricelistId].IsPulling = false;
+                        cManager[pricelistId].PullRecordsProcessed = 0;
+                        return Ok("Неверный формат файла");
+                    }
 
-                        int itemCode;
 
-                        if (!int.TryParse(col[0], out itemCode))
-                            continue;
 
-                        var existingSupplierRecord = supplierSet.Where(i => i.Kod == itemCode).FirstOrDefault();
+                    List<Guid> processedRecordIds = new List<Guid>();
+
+
+                    for (int i = 2; i <= sheet.Dimension.Rows; i++)
+                    {
+                        int itemCode = int.Parse(sheet.Cells[i, 1].Value.ToString());
+
+                        var existingSupplierRecord = supplierSet.Where(i => i.NomerTovara == itemCode).FirstOrDefault();
+
                         Guid newItemId = Guid.NewGuid();
 
-                        var supplierRecordToProcess = new DynatoneOffer
+                        var supplierRecordToProcess = new PleerOffer
                         {
                             Id = newItemId,
-                            Kod = col[0].ParseNullableInt(),
-                            KodGruppy = col[1].ParseNullableInt(),
-                            Naimenovanie = col[2],
-                            RRC = col[3].ParseNullableInt(),
-                            CenaDiler = col[4].ParseNullableInt(),
-                            KolichestvoDlyaOpta = col[5].ParseNullableInt(),
-                            VidNomenklatury = col[6],
-                            Brand = col[7],
-                            ModelSModifikaciyey = col[8],
-                            Articul = col[9],
-                            Barcode = col[10],
-                            Model = col[11],
-                            Modifikaciya = col[12],
-                            KodSPrefixom = col[13],
-                            StranaProishojdenia = col[14],
-                            Ves = col[15].ParseNullableFloat(),
-                            Dlina = col[16].ParseNullableFloat(),
-                            Shirina = col[17].ParseNullableFloat(),
-                            Vysota = col[18].ParseNullableFloat(),
-                            Izobrazhenie = col[19],
-                            Opisanie = col[20]
+                            NomerTovara = itemCode,
+                            Catalog = sheet.Cells[i, 2].Value == null ? "" : sheet.Cells[i, 2].Value?.ToString(),
+                            KodTovara = sheet.Cells[i, 3].Value == null ? "" : sheet.Cells[i, 3].Value?.ToString(),
+                            Naimenovanie = sheet.Cells[i, 4].Value == null ? "" : sheet.Cells[i, 4].Value?.ToString(),
+                            Garantiya = sheet.Cells[i, 5].Value == null ? "" : sheet.Cells[i, 5].Value?.ToString(),
+                            Nalichie = sheet.Cells[i, 6].Value == null ? 0 : int.Parse(sheet.Cells[i, 6].Value?.ToString()),
+                            Diler1 = sheet.Cells[i, 7].Value == null? 0 : int.Parse(sheet.Cells[i, 7].Value.ToString()),
+                            Diler2 = sheet.Cells[i, 8].Value == null ? 0 : int.Parse(sheet.Cells[i, 8].Value.ToString()),
+                            Diler3 = sheet.Cells[i, 9].Value == null ? 0 : int.Parse(sheet.Cells[i, 9].Value.ToString()),
+                            Diler4 = sheet.Cells[i, 10].Value == null ? 0 : int.Parse(sheet.Cells[i, 10].Value.ToString()),
                         };
+
+                        if (supplierRecordToProcess.Diler4 * exchangeRate < 10000)
+                            continue;
 
                         if (existingSupplierRecord == null)
                         {
@@ -173,7 +182,6 @@ namespace MainApp.Controllers.Pricelists
                             processedRecordIds.Add(existingSupplierRecord.Id);
                         }
                         cManager[pricelistId].PullRecordsProcessed++;
-
                     }
 
                     cManager[pricelistId].PullRecordsProcessed = -1;
@@ -192,44 +200,43 @@ namespace MainApp.Controllers.Pricelists
                                        allRecs.Count(i => i.Status == VectorOfferStatus.PriceAndDescriptionChanged));
 
                     cManager[pricelistId].IsPulling = false;
-
-                    return Ok();
                 }
+
             }
             catch
             {
-                cManager[pricelistId].IsPulling = false;
-                cManager[pricelistId].PullRecordsProcessed = 0;
-                return StatusCode(400);
+                return Ok("Неверный формат файла");
             }
+
+            return Ok();
         }
 
         [Route("getbriefdata")]
         [HttpGet]
-        public IActionResult GetBriefData()
+        public async Task<IActionResult> GetBriefData()
         {
             var pl = db.Pricelists.Where(p => p.Id == pricelistId).FirstOrDefault();
 
             var nfi = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
             nfi.NumberGroupSeparator = " ";
-            var res = db.VectorOffers.Where(v => v.PricelistId == pricelistId).Join(supplierSet, v => v.Id, d => d.Id, (v, d) => new
+            var res = await db.VectorOffers.Where(v => v.PricelistId == pricelistId).Join(supplierSet, v => v.Id, d => d.Id, (v, d) => new
             {
                 Id = v.Id,
                 IsVerified = v.IsVerified,
                 Status = v.Status,
-                GroupCode = d.KodGruppy,
-                Sku = v.Sku == null ? d.KodSPrefixom : v.Sku,
+                GroupCode = d.Catalog,
+                Sku = v.Sku == null ? d.KodTovara : v.Sku,
                 isSkuCustom = v.Sku != null,
-                Brand = v.Brand == null ? d.Brand : v.Brand,
+                Brand = v.Brand == null ? "No" : v.Brand,
                 isBrandCustom = v.Brand != null,
                 Name = v.Name == null ? d.Naimenovanie : v.Name,
                 isNameCustom = v.Name != null,
-                Price = v.Price == null ? PriceFormula((double)d.CenaDiler, exchangeRate) : v.Price,
+                Price = v.Price == null ? PriceFormula((double)d.Diler4, exchangeRate) : v.Price,
                 isPriceCustom = v.Price != null,
-                PriceLimit = v.PriceLimit == null ? PriceLimitFormula((double)d.CenaDiler, exchangeRate) : v.PriceLimit,
+                PriceLimit = v.PriceLimit == null ? PriceLimitFormula((double)d.Diler4, exchangeRate) : v.PriceLimit,
                 isPriceLimitCustom = v.PriceLimit != null,
-                isAvailable = d.KolichestvoDlyaOpta >= pl.MinStockAvail
-            }).OrderByDescending(i => i.isAvailable).ToList();
+                isAvailable = d.Nalichie >= pl.MinStockAvail
+            }).OrderByDescending(i => i.isAvailable).ToListAsync();
             return Ok(res);
         }
 
@@ -245,14 +252,14 @@ namespace MainApp.Controllers.Pricelists
         [HttpPost]
         public IActionResult SetGroupStatus([FromBody] dynamic qparams)
         {
-            var groupCode = (int)qparams["groupCode"];
+            var groupCode = (string)qparams["groupCode"];
             var allRecIds = db.VectorOffers.Join(supplierSet, v => v.Id, d => d.Id, (v, d) =>
             new
             {
                 id = v.Id,
                 v.PricelistId,
-                groupCode = d.KodGruppy,
-            }).Where(i => i.PricelistId == pricelistId && i.groupCode == groupCode).Select(i => i.id).ToList();
+                groupCode = d.Catalog,
+            }).Where(i => i.PricelistId == pricelistId && i.groupCode.Equals(groupCode)).Select(i => i.id).ToList();
 
             foreach (var recId in allRecIds)
             {
@@ -278,15 +285,15 @@ namespace MainApp.Controllers.Pricelists
             switch (field)
             {
                 case "sku":
-                    return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => i.KodSPrefixom).FirstOrDefault());
+                    return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => i.KodTovara.FirstOrDefault()));
                 case "brand":
-                    return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => i.Brand).FirstOrDefault());
+                    return Ok("Не указан");
                 case "name":
                     return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => i.Naimenovanie).FirstOrDefault());
                 case "price":
-                    return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => PriceFormula((double)i.CenaDiler, exchangeRate)).FirstOrDefault());
+                    return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => PriceFormula((double)i.Diler4, exchangeRate)).FirstOrDefault());
                 case "priceLimit":
-                    return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => PriceLimitFormula((double)i.CenaDiler, exchangeRate)).FirstOrDefault());
+                    return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => PriceLimitFormula((double)i.Diler4, exchangeRate)).FirstOrDefault());
             }
             return StatusCode(400);
         }
@@ -295,6 +302,7 @@ namespace MainApp.Controllers.Pricelists
         [HttpPost]
         public IActionResult GenerateXLS([FromBody] dynamic qParams)
         {
+
             using (var package = new ExcelPackage())
             {
                 int start = 0;
@@ -316,16 +324,14 @@ namespace MainApp.Controllers.Pricelists
                 worksheet.Column(start + 7).Width = 8;
                 worksheet.Cells[1, start + 8].Value = "pp2";
                 worksheet.Column(start + 8).Width = 8;
-                worksheet.Cells[1, start + 9].Value = "mskdnt";
+                worksheet.Cells[1, start + 9].Value = "pp3";
                 worksheet.Column(start + 9).Width = 8;
-                worksheet.Cells[1, start + 10].Value = "nnach";
+                worksheet.Cells[1, start + 10].Value = "preorder_in_days";
                 worksheet.Column(start + 10).Width = 8;
-                worksheet.Cells[1, start + 11].Value = "preorder_in_days";
+                worksheet.Cells[1, start + 11].Value = "is_favorite";
                 worksheet.Column(start + 11).Width = 8;
-                worksheet.Cells[1, start + 12].Value = "is_favorite";
-                worksheet.Column(start + 12).Width = 8;
-                worksheet.Cells[1, start + 13].Value = "supplier";
-                worksheet.Column(start + 13).Width = 30;
+                worksheet.Cells[1, start + 12].Value = "supplier";
+                worksheet.Column(start + 12).Width = 30;
                 worksheet.Row(1).Style.Font.Bold = true;
 
 
@@ -335,12 +341,12 @@ namespace MainApp.Controllers.Pricelists
                 {
                     IsVerified = v.IsVerified,
                     Status = v.Status,
-                    Sku = v.Sku == null ? d.KodSPrefixom : v.Sku,
-                    Brand = v.Brand == null ? d.Brand : v.Brand,
+                    Sku = v.Sku == null ? d.KodTovara : v.Sku,
+                    Brand = v.Brand == null ? "No" : v.Brand,
                     Name = v.Name == null ? d.Naimenovanie : v.Name,
-                    Price = v.Price == null ? PriceFormula((double)d.CenaDiler, exchangeRate) : v.Price,
-                    PriceLimit = v.PriceLimit == null ? PriceLimitFormula((double)d.CenaDiler, exchangeRate) : v.PriceLimit,
-                    isAvailable = d.KolichestvoDlyaOpta >= pl.MinStockAvail
+                    Price = v.Price == null ? PriceFormula((double)d.Diler4, exchangeRate) : v.Price,
+                    PriceLimit = v.PriceLimit == null ? PriceLimitFormula((double)d.Diler4, exchangeRate) : v.PriceLimit,
+                    isAvailable = d.Nalichie >= pl.MinStockAvail
                 });
 
                 foreach (var rec in allRecs)
@@ -377,10 +383,9 @@ namespace MainApp.Controllers.Pricelists
                         worksheet.Cells[curRow, start + 7].Value = 0;
                         worksheet.Cells[curRow, start + 8].Value = 0;
                         worksheet.Cells[curRow, start + 9].Value = rec.isAvailable ? 1 : 0;
-                        worksheet.Cells[curRow, start + 10].Value = 0;
-                        worksheet.Cells[curRow, start + 11].Value = pl.PreorderInDays;
-                        worksheet.Cells[curRow, start + 12].Value = pl.IsFavorite ? 1 : 0;
-                        worksheet.Cells[curRow, start + 13].Value = supplierName;
+                        worksheet.Cells[curRow, start + 10].Value = pl.PreorderInDays;
+                        worksheet.Cells[curRow, start + 11].Value = pl.IsFavorite ? 1 : 0;
+                        worksheet.Cells[curRow, start + 12].Value = supplierName;
                         curRow++;
                     }
                 }
@@ -619,3 +624,4 @@ namespace MainApp.Controllers.Pricelists
         }
     }
 }
+

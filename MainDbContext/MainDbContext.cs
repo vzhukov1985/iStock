@@ -32,6 +32,7 @@ namespace DbCore
             //Pricelists
             modelBuilder.Entity<DynatoneOffer>(DynatoneConfigure);
             modelBuilder.Entity<GrandmOffer>(GrandmConfigure);
+            modelBuilder.Entity<PleerOffer>(PleerConfigure);
         }
 
         protected void TelegramUsersConfigure(EntityTypeBuilder<TelegramUser> builder)
@@ -101,6 +102,10 @@ namespace DbCore
             builder.Property(p => p.Controller)
                 .IsRequired()
                 .HasColumnType("varchar(200)");
+
+            builder.Property(p => p.PullMethodType)
+                .IsRequired()
+                .HasColumnType("int");
         }
 
         protected void VecorOffersConfigure(EntityTypeBuilder<VectorOffer> builder)
@@ -326,6 +331,49 @@ namespace DbCore
 
         }
 
+        protected void PleerConfigure(EntityTypeBuilder<PleerOffer> builder)
+        {
+            builder.ToTable("pleer");
+
+            builder.HasKey(p => p.Id)
+                   .HasName("PRIMARY");
+
+
+            builder.Property(p => p.Id)
+                .IsRequired()
+                .HasColumnType("char(36)");
+
+            builder.Property(p => p.NomerTovara)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.Catalog)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.KodTovara)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.Naimenovanie)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.Garantiya)
+                .HasColumnType("varchar(255)");
+
+            builder.Property(p => p.Nalichie)
+                .HasColumnType("int");
+
+            builder.Property(p => p.Diler1)
+                .HasColumnType("int");
+
+            builder.Property(p => p.Diler2)
+                .HasColumnType("int");
+
+            builder.Property(p => p.Diler3)
+                .HasColumnType("int");
+
+            builder.Property(p => p.Diler4)
+                .HasColumnType("int");
+        }
+
 
         public virtual DbSet<TelegramUser> TelegramUsers { get; set; }
 
@@ -334,5 +382,6 @@ namespace DbCore
 
         public virtual DbSet<DynatoneOffer> Dynatone { get; set; }
         public virtual DbSet<GrandmOffer> Grandm { get; set; }
+        public virtual DbSet<PleerOffer> Pleer { get; set; }
     }
 }

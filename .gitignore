@@ -233,9 +233,6 @@ DocProject/Help/*.hhp
 DocProject/Help/Html2
 DocProject/Help/html
 
-# Click-Once directory
-publish/
-
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml
@@ -403,3 +400,6 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
+
+Publish/Staging
+Publish/Production

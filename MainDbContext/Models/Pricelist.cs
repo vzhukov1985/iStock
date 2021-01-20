@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace DbCore.Models
@@ -17,5 +18,6 @@ namespace DbCore.Models
         public double? ExchangeRate { get; set; }
 
         public string Controller { get; set; }
+        public int PullMethodType { get; set; }
     }
 }

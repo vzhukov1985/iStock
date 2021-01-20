@@ -68,125 +68,133 @@ namespace MainApp.Controllers.Pricelists
             cManager[pricelistId].PullRecordsProcessed = 0;
 
             List<Guid> processedRecordIds = new List<Guid>();
-
-            using (CsvTextFieldParser reader = new CsvTextFieldParser(await hc.GetStreamAsync(supplierSourceFileURL), System.Text.Encoding.GetEncoding(1251)))
+            try
             {
-                reader.Delimiters = new string[] { ";" };
-                reader.ReadFields(); //read header
-
-                string[] col;
-
-                while (!reader.EndOfData)
+                using (CsvTextFieldParser reader = new CsvTextFieldParser(await hc.GetStreamAsync(supplierSourceFileURL), System.Text.Encoding.GetEncoding(1251)))
                 {
-                    try
+                    reader.Delimiters = new string[] { ";" };
+                    reader.ReadFields(); //read header
+
+                    string[] col;
+
+                    while (!reader.EndOfData)
                     {
-                        col = reader.ReadFields();
-                    }
-                    catch
-                    {
-                        continue;
-                    }
+                        try
+                        {
+                            col = reader.ReadFields();
+                        }
+                        catch
+                        {
+                            continue;
+                        }
 
-                    int itemCode;
+                        int itemCode;
 
-                    if (!int.TryParse(col[5], out itemCode))
-                        continue;
+                        if (!int.TryParse(col[5], out itemCode))
+                            continue;
 
-                    var existingSupplierRecord = supplierSet.Where(i => i.IdTovara == itemCode).FirstOrDefault();
-                    Guid newItemId = Guid.NewGuid();
+                        var existingSupplierRecord = supplierSet.Where(i => i.IdTovara == itemCode).FirstOrDefault();
+                        Guid newItemId = Guid.NewGuid();
 
-                    var supplierRecordToProcess = new GrandmOffer
-                    {
-                        Id = newItemId,
-                        Brand = string.IsNullOrEmpty(col[4]) ? (string.IsNullOrEmpty(col[3]) ? (string.IsNullOrEmpty(col[2]) ? (string.IsNullOrEmpty(col[1]) ? col[0] : col[1]) : col[2]) : col[3]) : col[4],
-                        CategoryName = string.IsNullOrEmpty(col[4]) ? (string.IsNullOrEmpty(col[3]) ? (string.IsNullOrEmpty(col[2]) ? (string.IsNullOrEmpty(col[1]) ? "-" : col[0]) : col[1]) : col[2]) : col[3],
-                        CenaDiler = col[13].Substring(0, col[13].Length - 4).Replace(" ","").ParseNullableInt(),
-                        Kornevaya = col[0],
-                        Podkategoriya1 = col[1],
-                        Podkategoriya2 = col[2],
-                        Podkategoriya3 = col[3],
-                        Podkategoriya4 = col[4],
-                        IdTovara = col[5].ParseNullableInt(),
-                        NazvanieTovara = col[6],
-                        URL = col[7],
-                        KratkoeOpisanie = col[8],
-                        Izobrazheniya = col[9],
-                        SvoistvoRazmer = col[10],
-                        SvoistvoCvet = col[11],
-                        Articul = col[12],
-                        CenaProdazhi = col[13],
-                        Ostatok = col[14].ParseNullableInt(),
-                        Ves = col[15]
-                    };
-
-                    if (existingSupplierRecord == null)
-                    {
-                        VectorOffer newVectorOffer = new VectorOffer
+                        var supplierRecordToProcess = new GrandmOffer
                         {
                             Id = newItemId,
-                            Supplier = supplierName,
-                            PricelistId = pricelistId
+                            Brand = string.IsNullOrEmpty(col[4]) ? (string.IsNullOrEmpty(col[3]) ? (string.IsNullOrEmpty(col[2]) ? (string.IsNullOrEmpty(col[1]) ? col[0] : col[1]) : col[2]) : col[3]) : col[4],
+                            CategoryName = string.IsNullOrEmpty(col[4]) ? (string.IsNullOrEmpty(col[3]) ? (string.IsNullOrEmpty(col[2]) ? (string.IsNullOrEmpty(col[1]) ? "-" : col[0]) : col[1]) : col[2]) : col[3],
+                            CenaDiler = col[13].Substring(0, col[13].Length - 4).Replace(" ", "").ParseNullableInt(),
+                            Kornevaya = col[0],
+                            Podkategoriya1 = col[1],
+                            Podkategoriya2 = col[2],
+                            Podkategoriya3 = col[3],
+                            Podkategoriya4 = col[4],
+                            IdTovara = col[5].ParseNullableInt(),
+                            NazvanieTovara = col[6],
+                            URL = col[7],
+                            KratkoeOpisanie = col[8],
+                            Izobrazheniya = col[9],
+                            SvoistvoRazmer = col[10],
+                            SvoistvoCvet = col[11],
+                            Articul = col[12],
+                            CenaProdazhi = col[13],
+                            Ostatok = col[14].ParseNullableInt(),
+                            Ves = col[15]
                         };
 
-                        db.Add(supplierRecordToProcess);
-                        db.Add(newVectorOffer);
-                        processedRecordIds.Add(supplierRecordToProcess.Id);
-                    }
-                    else
-                    {
-                        bool isDescriptionChanged = supplierRecordToProcess.IsDescriptionChanged(existingSupplierRecord);
-                        bool isPriceChanged = supplierRecordToProcess.IsPriceChanged(existingSupplierRecord);
-                        existingSupplierRecord.CopyFromWithoutId(supplierRecordToProcess);
-                        db.Update(existingSupplierRecord);
+                        if (existingSupplierRecord == null)
+                        {
+                            VectorOffer newVectorOffer = new VectorOffer
+                            {
+                                Id = newItemId,
+                                Supplier = supplierName,
+                                PricelistId = pricelistId
+                            };
 
-                        VectorOffer existingVectorOffer = db.VectorOffers.Where(i => i.Id == existingSupplierRecord.Id).FirstOrDefault();
-                        if (isDescriptionChanged)
-                        {
-                            if (existingVectorOffer.Status == VectorOfferStatus.PriceChanged)
-                            {
-                                existingVectorOffer.Status = VectorOfferStatus.PriceAndDescriptionChanged;
-                            }
-                            else
-                            {
-                                existingVectorOffer.Status = VectorOfferStatus.DescriptionChanged;
-                            }
-                            existingVectorOffer.IsVerified = false;
+                            db.Add(supplierRecordToProcess);
+                            db.Add(newVectorOffer);
+                            processedRecordIds.Add(supplierRecordToProcess.Id);
                         }
-                        if (isPriceChanged && existingVectorOffer.Price != null)
+                        else
                         {
-                            if (existingVectorOffer.Status == VectorOfferStatus.DescriptionChanged)
+                            bool isDescriptionChanged = supplierRecordToProcess.IsDescriptionChanged(existingSupplierRecord);
+                            bool isPriceChanged = supplierRecordToProcess.IsPriceChanged(existingSupplierRecord);
+                            existingSupplierRecord.CopyFromWithoutId(supplierRecordToProcess);
+                            db.Update(existingSupplierRecord);
+
+                            VectorOffer existingVectorOffer = db.VectorOffers.Where(i => i.Id == existingSupplierRecord.Id).FirstOrDefault();
+                            if (isDescriptionChanged)
                             {
-                                existingVectorOffer.Status = VectorOfferStatus.PriceAndDescriptionChanged;
+                                if (existingVectorOffer.Status == VectorOfferStatus.PriceChanged)
+                                {
+                                    existingVectorOffer.Status = VectorOfferStatus.PriceAndDescriptionChanged;
+                                }
+                                else
+                                {
+                                    existingVectorOffer.Status = VectorOfferStatus.DescriptionChanged;
+                                }
+                                existingVectorOffer.IsVerified = false;
                             }
-                            else
+                            if (isPriceChanged && existingVectorOffer.Price != null)
                             {
-                                existingVectorOffer.Status = VectorOfferStatus.PriceChanged;
+                                if (existingVectorOffer.Status == VectorOfferStatus.DescriptionChanged)
+                                {
+                                    existingVectorOffer.Status = VectorOfferStatus.PriceAndDescriptionChanged;
+                                }
+                                else
+                                {
+                                    existingVectorOffer.Status = VectorOfferStatus.PriceChanged;
+                                }
+                                existingVectorOffer.IsVerified = false;
                             }
-                            existingVectorOffer.IsVerified = false;
+                            db.Update(existingVectorOffer);
+                            processedRecordIds.Add(existingSupplierRecord.Id);
                         }
-                        db.Update(existingVectorOffer);
-                        processedRecordIds.Add(existingSupplierRecord.Id);
+                        cManager[pricelistId].PullRecordsProcessed++;
                     }
-                    cManager[pricelistId].PullRecordsProcessed++;
+
+                    cManager[pricelistId].PullRecordsProcessed = -1;
+
+                    db.VectorOffers.RemoveRange(db.VectorOffers.Where(vo => vo.PricelistId == pricelistId && !processedRecordIds.Contains(vo.Id)));
+                    supplierSet.RemoveRange(supplierSet.Where(ss => !processedRecordIds.Contains(ss.Id)));
+
+                    var pricelistRec = db.Pricelists.Where(i => i.Id == pricelistId).FirstOrDefault();
+                    pricelistRec.LastPull = DateTime.Now;
+                    db.SaveChanges();
+
+                    var allRecs = db.VectorOffers.Where(vo => vo.PricelistId == pricelistId).Select(vo => new { vo.IsVerified, vo.Status }).AsEnumerable();
+                    SendTelegramStatus(allRecs.Count(i => i.IsVerified == false),
+                                       allRecs.Count(i => i.Status == VectorOfferStatus.DescriptionChanged),
+                                       allRecs.Count(i => i.Status == VectorOfferStatus.PriceChanged),
+                                       allRecs.Count(i => i.Status == VectorOfferStatus.PriceAndDescriptionChanged));
+
+                    cManager[pricelistId].IsPulling = false;
+                    return Ok();
                 }
-
-                cManager[pricelistId].PullRecordsProcessed = -1;
-
-                db.VectorOffers.RemoveRange(db.VectorOffers.Where(vo => vo.PricelistId == pricelistId && !processedRecordIds.Contains(vo.Id)));
-                supplierSet.RemoveRange(supplierSet.Where(ss => !processedRecordIds.Contains(ss.Id)));
-
-                var pricelistRec = db.Pricelists.Where(i => i.Id == pricelistId).FirstOrDefault();
-                pricelistRec.LastPull = DateTime.Now;
-                db.SaveChanges();
-
-                var allRecs = db.VectorOffers.Where(vo => vo.PricelistId == pricelistId).Select(vo => new { vo.IsVerified, vo.Status }).AsEnumerable();
-                SendTelegramStatus(allRecs.Count(i => i.IsVerified == false),
-                                   allRecs.Count(i => i.Status == VectorOfferStatus.DescriptionChanged),
-                                   allRecs.Count(i => i.Status == VectorOfferStatus.PriceChanged),
-                                   allRecs.Count(i => i.Status == VectorOfferStatus.PriceAndDescriptionChanged));
-
+            }
+            catch
+            {
                 cManager[pricelistId].IsPulling = false;
-                return Ok();
+                cManager[pricelistId].PullRecordsProcessed = 0;
+                return StatusCode(400);
             }
         }
 

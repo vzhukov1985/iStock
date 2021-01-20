@@ -23,8 +23,8 @@ namespace MainApp
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    //SCRIPT_PORT
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls($"http://*:{CoreSettings.HttpPort}/", $"https://*:{CoreSettings.HttpsPort}/");
                 });
     }
 }
