@@ -4,10 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using DbCore;
 using DbCore.PLModels;
-using Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using DbCore.Models;
-using Core.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
@@ -20,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using NotVisualBasic.FileIO;
 using Microsoft.AspNetCore.Http;
+using MainApp.Extensions;
 
 namespace MainApp.Controllers.Pricelists
 {
@@ -41,13 +40,18 @@ namespace MainApp.Controllers.Pricelists
 
         protected MainDbContext db;
         protected HttpClient hc;
-        protected ControllersManager cManager;
+        protected ControllersManagerService cManager;
+        protected TelegramOperatorBotService _telegramOperatorBotService;
 
-        public PleerController(MainDbContext dbContext, HttpClient client, ControllersManager manager)
+        public PleerController(MainDbContext dbContext,
+                               HttpClient client,
+                               ControllersManagerService manager,
+                               TelegramOperatorBotService telegramOperatorBotService)
         {
             db = dbContext;
             hc = client;
             cManager = manager;
+            _telegramOperatorBotService = telegramOperatorBotService;
             pricelistId = Guid.Parse("83e5032e-3ee3-4278-8399-f5d0338c03e6");
             supplierName = cManager[pricelistId].SupplierName;
             supplierSourceFileURL = "none";
@@ -70,7 +74,7 @@ namespace MainApp.Controllers.Pricelists
 
         [Route("pull")]
         [HttpPost]
-        public async Task<IActionResult> PullPricelist(IList<IFormFile> files)
+        public IActionResult PullPricelist(IList<IFormFile> files)
         {
             if (cManager[pricelistId].IsPulling)
                 return Ok();
@@ -399,7 +403,7 @@ namespace MainApp.Controllers.Pricelists
             double? exRate = db.Pricelists.Where(pl => pl.Id == pricelistId).Select(pl => pl.ExchangeRate).FirstOrDefault();
             if (exRate == null)
             {
-                exchangeRate = AutoExchangeRates.getRate(currency);
+                exchangeRate = ExchangeRatesService.getRate(currency);
             }
             else
             {
@@ -420,7 +424,7 @@ namespace MainApp.Controllers.Pricelists
         [HttpGet]
         public IActionResult GetAutoExchangeRate()
         {
-            return Ok(AutoExchangeRates.getRate(currency));
+            return Ok(ExchangeRatesService.getRate(currency));
         }
 
         [Route("setControllerId")]
@@ -467,7 +471,7 @@ namespace MainApp.Controllers.Pricelists
                 p.MinStockAvail,
                 p.IsFavorite,
                 IsAutoExchangeRate = p.ExchangeRate == null,
-                ExchangeRate = p.ExchangeRate == null ? AutoExchangeRates.getRate(currency) : p.ExchangeRate,
+                ExchangeRate = p.ExchangeRate == null ? ExchangeRatesService.getRate(currency) : p.ExchangeRate,
                 ExchangeRateCurrency = currency
             }).FirstOrDefault();
 
@@ -521,7 +525,7 @@ namespace MainApp.Controllers.Pricelists
             {
                 message += $"<b>{priceAndDescriptionChangedCount}</b> позиций, у которых изменились и цена, и описание\n";
             }
-            TelegramOperatorBot.Broadcast(message);
+            _telegramOperatorBotService.Broadcast(message);
         }
 
         [Route("pull/ispulling")]

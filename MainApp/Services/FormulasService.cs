@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Core.Services
+namespace MainApp.Services
 {
-    public class Formulas
+    public class FormulasService
     {
         public static double StandardPriceFormula(double supplierPrice, double exchangeRate)
         {

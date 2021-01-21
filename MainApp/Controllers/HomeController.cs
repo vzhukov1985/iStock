@@ -4,8 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Core.Services;
 using DbCore;
+using MainApp.Services;
 using MainApp.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
@@ -45,7 +45,7 @@ namespace MainApp.Controllers
 
         public IActionResult Index()
         {
-            AutoExchangeRates.UpdateRatesAsync(hc);
+            ExchangeRatesService.UpdateRatesAsync(hc);
             return View();
         }
 

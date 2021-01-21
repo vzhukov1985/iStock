@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Xml.Linq;
+using MainApp.Extensions;
 
-namespace Core.Services
+namespace MainApp.Services
 {
-    public static class AutoExchangeRates
+    public static class ExchangeRatesService
     {
         private static Dictionary<string, double?> rates;
         private static DateTime? LastUpdate;
 
-        static AutoExchangeRates()
+        static ExchangeRatesService()
         {
             LastUpdate = null;
             rates = new Dictionary<string, double?>();

@@ -4,10 +4,11 @@ using System.Linq;
 using System.Reflection;
 using DbCore;
 using DbCore.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MainApp.Services
 {
-    public class ControllersManager
+    public class ControllersManagerService
     {
         public List<ControllerInfo> Controllers { get;}
 
@@ -32,9 +33,15 @@ namespace MainApp.Services
             }
         }
 
-        public ControllersManager()
+        public ControllersManagerService()
         {
-            using (MainDbContext db = new MainDbContext())
+            var optionsBuilder = new DbContextOptionsBuilder<MainDbContext>();
+
+            var options = optionsBuilder
+                    .UseMySql(SettingsService.GetDbConnectionString())
+                    .Options;
+
+            using (MainDbContext db = new MainDbContext(options))
             {
                 Controllers = db.Pricelists.Select(pl => new ControllerInfo(pl)).ToList();
             }

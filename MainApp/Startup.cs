@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Core.Models;
-using Core.Services;
 using DbCore;
 using DbCore.Models;
 using MainApp.Controllers.Pricelists;
@@ -19,6 +17,8 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using OfficeOpenXml;
 using Westwind.AspNetCore.LiveReload;
+using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace MainApp
 {
@@ -37,20 +37,26 @@ namespace MainApp
             services.AddControllersWithViews()
                 .AddNewtonsoftJson();
 
-            services.AddDbContext<MainDbContext>();
+            services.AddDbContext<MainDbContext>(options => options.UseMySql(SettingsService.GetDbConnectionString()));
 
             services.AddSingleton<HttpClient>();
-            services.AddSingleton<ControllersManager>();
+            services.AddSingleton<ControllersManagerService>();
+            services.AddSingleton<TelegramOperatorBotService>();
 
             //TODO: Delete after deployment
-            services.AddLiveReload();
-            services.AddRazorPages().AddRazorRuntimeCompilation();
-            services.AddMvc().AddRazorRuntimeCompilation();
+            //services.AddLiveReload();
+            //services.AddRazorPages().AddRazorRuntimeCompilation();
+            //services.AddMvc().AddRazorRuntimeCompilation();
 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, HttpClient hc, ControllersManager cManager, IHostApplicationLifetime appLifetime)
+        public void Configure(IApplicationBuilder app,
+                              IWebHostEnvironment env,
+                              HttpClient hc,
+                              ControllersManagerService cManager,
+                              IHostApplicationLifetime appLifetime,
+                              TelegramOperatorBotService telegramOperatorBotService)
         {
             if (env.IsDevelopment())
             {
@@ -78,21 +84,21 @@ namespace MainApp
 
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
 
-            AutoExchangeRates.UpdateRatesAsync(hc);
+            ExchangeRatesService.UpdateRatesAsync(hc);
 
             appLifetime.ApplicationStarted.Register(() => OnStarted(hc, cManager));
 
             try
             {
-                TelegramOperatorBot.StartBot();
+                telegramOperatorBotService.StartBot();
             }
             catch
             {
-                TelegramOperatorBot.isRunning = false;
+                telegramOperatorBotService.isRunning = false;
             }
         }
 
-        public void OnStarted(HttpClient hc, ControllersManager cManager)
+        public void OnStarted(HttpClient hc, ControllersManagerService cManager)
         {
             foreach (var controller in cManager.Controllers)
             {

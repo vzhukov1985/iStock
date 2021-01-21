@@ -1,5 +1,6 @@
 ﻿using DbCore;
 using DbCore.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,25 +10,37 @@ using Telegram.Bot.Args;
 
 namespace MainApp.Services
 {
-    public static class TelegramOperatorBot
+    public class TelegramOperatorBotService
     {
-        private static ITelegramBotClient botClient;
-        public static bool isRunning = false;
 
-        public static void StartBot()
+        private ITelegramBotClient botClient;
+        public bool isRunning = false;
+
+        private DbContextOptions<MainDbContext> dbContextOptions;
+
+        public TelegramOperatorBotService()
         {
-            botClient = new TelegramBotClient("1471458337:AAHp5ztCVGbkNkNe6UaRYGZqcWLsQ62-1Ao");
+            var optionsBuilder = new DbContextOptionsBuilder<MainDbContext>();
+
+            dbContextOptions = optionsBuilder
+                    .UseMySql(SettingsService.GetDbConnectionString())
+                    .Options;
+        }
+
+        public void StartBot()
+        {
+            botClient = new TelegramBotClient(SettingsService.GetTelegramOperatorBotToken());
             botClient.OnMessage += Bot_OnMessage;
             botClient.StartReceiving();
             isRunning = true;
         }
 
-        public static void Broadcast(string str)
+        public void Broadcast(string str)
         {
             if (isRunning == false)
                 return;
 
-            using (MainDbContext db = new MainDbContext())
+            using (MainDbContext db = new MainDbContext(dbContextOptions))
             {
                 var allOps = db.TelegramUsers.Where(tu => tu.Role == "Operator");
                 foreach (var op in allOps)
@@ -37,14 +50,14 @@ namespace MainApp.Services
             }
         }
 
-        private static void Bot_OnMessage(object sender, MessageEventArgs e)
+        private void Bot_OnMessage(object sender, MessageEventArgs e)
         {
             if (isRunning == false)
                 return;
 
             if (e.Message.Text.ToUpper() == "ADDME")
             {
-                using (MainDbContext db = new MainDbContext())
+                using (MainDbContext db = new MainDbContext(dbContextOptions))
                 {
                     var existingUser = db.TelegramUsers.Where(tu => tu.TelegramUserId == e.Message.Chat.Id && tu.Role == "Operator").FirstOrDefault();
                     if (existingUser == null)
@@ -67,7 +80,7 @@ namespace MainApp.Services
             
             if (e.Message.Text.ToUpper() == "REMOVEME")
             {
-                using (MainDbContext db = new MainDbContext())
+                using (MainDbContext db = new MainDbContext(dbContextOptions))
                 {
                     var existingUser = db.TelegramUsers.Where(tu => tu.TelegramUserId == e.Message.Chat.Id && tu.Role == "Operator").FirstOrDefault();
                     if (existingUser == null)

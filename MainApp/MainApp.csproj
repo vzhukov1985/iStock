@@ -45,6 +45,8 @@
     <Folder Include="wwwroot\lib\bootstrap\" />
     <Folder Include="wwwroot\lib\bootstrap\dist\" />
     <Folder Include="Views\Pleer\" />
+    <Folder Include="Extensions\" />
+    <Folder Include="Models\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -69,7 +71,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\MainDbContext\MainDbContext.csproj" />
   </ItemGroup>
 
@@ -89,6 +90,9 @@
     <Content Update="wwwroot\js\plSettingsModal.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Models\Settings.cs" />
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties NpmRestoreOnProjectOpen="True" /></VisualStudio></ProjectExtensions>
 </Project>
