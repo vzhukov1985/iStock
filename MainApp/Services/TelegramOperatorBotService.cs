@@ -10,15 +10,15 @@ using Telegram.Bot.Args;
 
 namespace MainApp.Services
 {
-    public class TelegramOperatorBotService
+    public static class TelegramOperatorBotService
     {
 
-        private ITelegramBotClient botClient;
-        public bool isRunning = false;
+        private static ITelegramBotClient botClient;
+        public static bool isRunning = false;
 
-        private DbContextOptions<MainDbContext> dbContextOptions;
+        private static DbContextOptions<MainDbContext> dbContextOptions;
 
-        public TelegramOperatorBotService()
+        static TelegramOperatorBotService()
         {
             var optionsBuilder = new DbContextOptionsBuilder<MainDbContext>();
 
@@ -27,7 +27,7 @@ namespace MainApp.Services
                     .Options;
         }
 
-        public void StartBot()
+        public static void StartBot()
         {
             botClient = new TelegramBotClient(SettingsService.GetTelegramOperatorBotToken());
             botClient.OnMessage += Bot_OnMessage;
@@ -35,7 +35,7 @@ namespace MainApp.Services
             isRunning = true;
         }
 
-        public void Broadcast(string str)
+        public static void Broadcast(string str)
         {
             if (isRunning == false)
                 return;
@@ -50,51 +50,59 @@ namespace MainApp.Services
             }
         }
 
-        private void Bot_OnMessage(object sender, MessageEventArgs e)
+        private static void Bot_OnMessage(object sender, MessageEventArgs e)
         {
             if (isRunning == false)
                 return;
 
-            if (e.Message.Text.ToUpper() == "ADDME")
+            try
             {
-                using (MainDbContext db = new MainDbContext(dbContextOptions))
+
+                if (e.Message.Text.ToUpper() == "ADDME")
                 {
-                    var existingUser = db.TelegramUsers.Where(tu => tu.TelegramUserId == e.Message.Chat.Id && tu.Role == "Operator").FirstOrDefault();
-                    if (existingUser == null)
+                    using (MainDbContext db = new MainDbContext(dbContextOptions))
                     {
-                        db.Add(new TelegramUser
+                        var existingUser = db.TelegramUsers.Where(tu => tu.TelegramUserId == e.Message.Chat.Id && tu.Role == "Operator").FirstOrDefault();
+                        if (existingUser == null)
                         {
-                            Id = Guid.NewGuid(),
-                            TelegramUserId = e.Message.Chat.Id,
-                            Role = "Operator"
-                        });
-                        db.SaveChanges();
-                        botClient.SendTextMessageAsync(e.Message.Chat.Id, "Вы добавлены в список рассылки обновлений базы");
+                            db.Add(new TelegramUser
+                            {
+                                Id = Guid.NewGuid(),
+                                TelegramUserId = e.Message.Chat.Id,
+                                Role = "Operator"
+                            });
+                            db.SaveChanges();
+                            botClient.SendTextMessageAsync(e.Message.Chat.Id, "Вы добавлены в список рассылки обновлений базы");
+                        }
+                        else
+                        {
+                            botClient.SendTextMessageAsync(e.Message.Chat.Id, "Вы уже есть в списке получателей рассылки обновлений базы");
+                        }
                     }
-                    else
+                }
+
+                if (e.Message.Text.ToUpper() == "REMOVEME")
+                {
+                    using (MainDbContext db = new MainDbContext(dbContextOptions))
                     {
-                        botClient.SendTextMessageAsync(e.Message.Chat.Id, "Вы уже есть в списке получателей рассылки обновлений базы");
+                        var existingUser = db.TelegramUsers.Where(tu => tu.TelegramUserId == e.Message.Chat.Id && tu.Role == "Operator").FirstOrDefault();
+                        if (existingUser == null)
+                        {
+
+                            botClient.SendTextMessageAsync(e.Message.Chat.Id, "Вас нет в списке получателей рассылки обновлений базы");
+                        }
+                        else
+                        {
+                            db.Remove(existingUser);
+                            db.SaveChanges();
+                            botClient.SendTextMessageAsync(e.Message.Chat.Id, "Вы были исключены из списка рассылки обновлений базы");
+                        }
                     }
                 }
             }
-            
-            if (e.Message.Text.ToUpper() == "REMOVEME")
+            catch
             {
-                using (MainDbContext db = new MainDbContext(dbContextOptions))
-                {
-                    var existingUser = db.TelegramUsers.Where(tu => tu.TelegramUserId == e.Message.Chat.Id && tu.Role == "Operator").FirstOrDefault();
-                    if (existingUser == null)
-                    {
-
-                        botClient.SendTextMessageAsync(e.Message.Chat.Id, "Вас нет в списке получателей рассылки обновлений базы");
-                    }
-                    else
-                    {
-                        db.Remove(existingUser);
-                        db.SaveChanges(); 
-                        botClient.SendTextMessageAsync(e.Message.Chat.Id, "Вы были исключены из списка рассылки обновлений базы");
-                    }
-                }
+                return;
             }
         }
     }

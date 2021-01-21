@@ -40,17 +40,14 @@ namespace MainApp.Controllers.Pricelists
         protected MainDbContext db;
         protected HttpClient hc;
         protected ControllersManagerService cManager;
-        protected TelegramOperatorBotService _telegramOperatorBotService;
 
         public GrandmController(MainDbContext dbContext,
                                 HttpClient client,
-                                ControllersManagerService manager,
-                                TelegramOperatorBotService telegramOperatorBotService)
+                                ControllersManagerService manager)
         {
             db = dbContext;
             hc = client;
             cManager = manager;
-            _telegramOperatorBotService = telegramOperatorBotService;
             pricelistId = Guid.Parse("9a35d1cc-bff4-4b52-ab08-b06f0934d933");
             supplierName = cManager[pricelistId].SupplierName;
             supplierSourceFileURL = "https://grandm.ru/upload/grandm_ru_dealer_price.csv";
@@ -519,7 +516,7 @@ namespace MainApp.Controllers.Pricelists
             {
                 message += $"<b>{priceAndDescriptionChangedCount}</b> позиций, у которых изменились и цена, и описание\n";
             }
-            _telegramOperatorBotService.Broadcast(message);
+            TelegramOperatorBotService.Broadcast(message);
         }
 
         [Route("pull/ispulling")]

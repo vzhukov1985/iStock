@@ -41,18 +41,15 @@ namespace MainApp.Controllers.Pricelists
         protected MainDbContext db;
         protected HttpClient hc;
         protected ControllersManagerService cManager;
-        protected TelegramOperatorBotService _telegramOperatorBotService;
 
         public DynatoneController(MainDbContext dbContext,
                                   HttpClient client,
-                                  ControllersManagerService manager,
-                                  TelegramOperatorBotService telegramOperatorBotService)
+                                  ControllersManagerService manager)
 
         {
             db = dbContext;
             hc = client;
             cManager = manager;
-            _telegramOperatorBotService = telegramOperatorBotService;
             pricelistId = Guid.Parse("82f9dbe9-1519-430d-9f37-2fe2a6786900");
             supplierName = cManager[pricelistId].SupplierName;
             supplierSourceFileURL = "http://opt.dynatone.ru/opt/getfile.php?fn=Product&ft=CSVdescr&pr=all&i=6174&d=1514451600";
@@ -521,7 +518,7 @@ namespace MainApp.Controllers.Pricelists
             {
                 message += $"<b>{priceAndDescriptionChangedCount}</b> позиций, у которых изменились и цена, и описание\n";
             }
-            _telegramOperatorBotService.Broadcast(message);
+            TelegramOperatorBotService.Broadcast(message);
         }
 
         [Route("pull/ispulling")]

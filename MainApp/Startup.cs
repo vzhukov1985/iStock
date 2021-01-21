@@ -41,7 +41,6 @@ namespace MainApp
 
             services.AddSingleton<HttpClient>();
             services.AddSingleton<ControllersManagerService>();
-            services.AddSingleton<TelegramOperatorBotService>();
 
             //TODO: Delete after deployment
             //services.AddLiveReload();
@@ -55,8 +54,7 @@ namespace MainApp
                               IWebHostEnvironment env,
                               HttpClient hc,
                               ControllersManagerService cManager,
-                              IHostApplicationLifetime appLifetime,
-                              TelegramOperatorBotService telegramOperatorBotService)
+                              IHostApplicationLifetime appLifetime)
         {
             if (env.IsDevelopment())
             {
@@ -90,11 +88,11 @@ namespace MainApp
 
             try
             {
-                telegramOperatorBotService.StartBot();
+                TelegramOperatorBotService.StartBot();
             }
             catch
             {
-                telegramOperatorBotService.isRunning = false;
+                TelegramOperatorBotService.isRunning = false;
             }
         }
 

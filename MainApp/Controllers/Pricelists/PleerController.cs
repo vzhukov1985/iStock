@@ -41,17 +41,14 @@ namespace MainApp.Controllers.Pricelists
         protected MainDbContext db;
         protected HttpClient hc;
         protected ControllersManagerService cManager;
-        protected TelegramOperatorBotService _telegramOperatorBotService;
 
         public PleerController(MainDbContext dbContext,
                                HttpClient client,
-                               ControllersManagerService manager,
-                               TelegramOperatorBotService telegramOperatorBotService)
+                               ControllersManagerService manager)
         {
             db = dbContext;
             hc = client;
             cManager = manager;
-            _telegramOperatorBotService = telegramOperatorBotService;
             pricelistId = Guid.Parse("83e5032e-3ee3-4278-8399-f5d0338c03e6");
             supplierName = cManager[pricelistId].SupplierName;
             supplierSourceFileURL = "none";
@@ -525,7 +522,7 @@ namespace MainApp.Controllers.Pricelists
             {
                 message += $"<b>{priceAndDescriptionChangedCount}</b> позиций, у которых изменились и цена, и описание\n";
             }
-            _telegramOperatorBotService.Broadcast(message);
+            TelegramOperatorBotService.Broadcast(message);
         }
 
         [Route("pull/ispulling")]

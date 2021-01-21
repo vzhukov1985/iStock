@@ -401,5 +401,6 @@ ASALocalRun/
 # Local History for Visual Studio
 .localhistory/
 
-Publish/Staging
-Publish/Production
+MainApp/Publish/Staging
+MainApp/Publish/Production
+MainApp/Publish/Export
