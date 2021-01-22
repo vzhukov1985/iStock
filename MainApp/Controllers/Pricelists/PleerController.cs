@@ -226,7 +226,7 @@ namespace MainApp.Controllers.Pricelists
                 IsVerified = v.IsVerified,
                 Status = v.Status,
                 GroupCode = d.Catalog,
-                Sku = v.Sku == null ? d.KodTovara : v.Sku,
+                Sku = v.Sku == null ? d.NomerTovara.ToString() : v.Sku,
                 isSkuCustom = v.Sku != null,
                 Brand = v.Brand == null ? "No" : v.Brand,
                 isBrandCustom = v.Brand != null,
@@ -286,7 +286,7 @@ namespace MainApp.Controllers.Pricelists
             switch (field)
             {
                 case "sku":
-                    return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => i.KodTovara.FirstOrDefault()));
+                    return Ok(supplierSet.Where(i => i.Id == Guid.Parse(id)).Select(i => i.NomerTovara.ToString().FirstOrDefault()));
                 case "brand":
                     return Ok("Не указан");
                 case "name":
@@ -342,7 +342,7 @@ namespace MainApp.Controllers.Pricelists
                 {
                     IsVerified = v.IsVerified,
                     Status = v.Status,
-                    Sku = v.Sku == null ? d.KodTovara : v.Sku,
+                    Sku = v.Sku == null ? d.NomerTovara.ToString() : v.Sku,
                     Brand = v.Brand == null ? "No" : v.Brand,
                     Name = v.Name == null ? d.Naimenovanie : v.Name,
                     Price = v.Price == null ? PriceFormula((double)d.Diler4, exchangeRate) : v.Price,
