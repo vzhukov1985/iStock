@@ -1,11 +1,11 @@
 PROJECT_PATH="/Users/v_zhukov/Projects/iStock/MainApp"
 APP_NAME="iStock"
 SERVICE_DESCRIPTION="iStock App"
-STAGING_URLS="https://*:5001"
-PRODUCTION_URLS="https://*:10201"
-EXPORT_URLS="https://*:10201"
+STAGING_URLS="http://*:5001"
+PRODUCTION_URLS="http://*:10201"
+EXPORT_URLS="http://*:10201"
 
-SERVER_ADDRESS="b2bmarket.kz"
+SERVER_ADDRESS="178.170.221.28"
 SERVER_SSH_USER="root"
 SERVER_APPS_DIR="/usr/local/bin"
 

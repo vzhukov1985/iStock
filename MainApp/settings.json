@@ -1,4 +1,4 @@
 {
-  "DbConnectionString": "server=localhost;port=3306;UserId=istockbe;Password=gjW81!-sf+Gb_dr;database=istock",
+  "DbConnectionString": "server=localhost;port=33023;UserId=root;Password=sd!Pmze4*32;database=istock",
   "TelegramBotToken": "1471458337:AAHp5ztCVGbkNkNe6UaRYGZqcWLsQ62-1Ao"
 }
